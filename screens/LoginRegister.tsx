@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-export const LoginRegister = () => {
+export const LoginRegister = ({ navigation }) => {
   const [toggleBtn, setToggleBtn] = useState(true)
   const [toggleRegister, setToggleRegister] = useState(false)
   return (
@@ -26,9 +26,9 @@ export const LoginRegister = () => {
           </TouchableOpacity>
         </View>
         <TextInput style={styles.textInput} placeholder='Email' />
-        <TextInput style={styles.textInput} placeholder='Password' />
-        {toggleRegister && <TextInput style={styles.textInput} placeholder='Confirm Password' />}
-        <TouchableOpacity style={styles.submitBtn}><Text style={styles.submitBtnText}>{!toggleRegister ? 'Login' : 'Register'}</Text></TouchableOpacity>
+        <TextInput style={styles.textInput} placeholder='Password' secureTextEntry={true} />
+        {toggleRegister && <TextInput style={styles.textInput} placeholder='Confirm Password' secureTextEntry={true} />}
+        <TouchableOpacity style={styles.submitBtn} onPress={() => navigation.navigate('Home')}><Text style={styles.submitBtnText}>{!toggleRegister ? 'Login' : 'Register'}</Text></TouchableOpacity>
       </View>
     </SafeAreaView>
   )
@@ -85,14 +85,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5
   },
-  submitBtn:{
+  submitBtn: {
     flex: 0,
     alignItems: 'center',
     backgroundColor: '#1F848A',
     padding: 10,
     borderRadius: 5
   },
-  submitBtnText:{
+  submitBtnText: {
     fontSize: 18,
     color: 'white',
     fontWeight: '600'
