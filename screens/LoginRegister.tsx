@@ -51,12 +51,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   brandText: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '700',
     color: 'black'
   },
   subBrandText: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '500',
     color: '#999999'
   },
@@ -75,13 +75,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3
   },
   btnText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500'
   },
   textInput: {
     borderColor: 'grey',
     padding: 10,
-    fontSize: 18,
+    fontSize: 14,
     borderWidth: 1,
     borderRadius: 5
   },
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   submitBtnText: {
-    fontSize: 18,
+    fontSize: 14,
     color: 'white',
     fontWeight: '600'
   }

@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, Image, StatusBar, TouchableOpacity, Button } from 'react-native';
 import { LoginRegister } from './screens/LoginRegister';
 import { Home } from './screens/Home';
 
@@ -25,6 +25,7 @@ export default function App(): JSX.Element {
   }
   return (
     <NavigationContainer>
+      <StatusBar backgroundColor='#1F848A'/>
       <Stack.Navigator initialRouteName='Login' >
         <Stack.Screen name="Login" component={LoginRegister} options={{ headerShown: false }} />
         <Stack.Screen name="Home" component={Home}
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    marginVertical: 20
+    marginVertical: 15
   },
   connectBtnText: {
     color: 'white',
