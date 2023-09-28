@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image } from 'react-native'
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image, ScrollView } from 'react-native'
 import { addDays, eachDayOfInterval, eachWeekOfInterval, format, subDays } from 'date-fns'
 import PagerView from 'react-native-pager-view'
 import { useState } from 'react'
@@ -6,6 +6,23 @@ import { useState } from 'react'
 export const Home = () => {
   const today = new Date()
   const [selectedDay, setSelectedDay] = useState(today)
+  const data = [
+    {
+      medicineName: 'Paracetamol',
+      medType: 'Tablet',
+      image: '',
+    },
+    {
+      medicineName: 'Paracetamol',
+      medType: 'Tablet',
+      image: '',
+    },
+    {
+      medicineName: 'Paracetamol',
+      medType: 'Tablet',
+      image: '',
+    },
+  ]
 
   const dates = eachWeekOfInterval({
     start: subDays(today, 14),
@@ -55,11 +72,62 @@ export const Home = () => {
         })}
       </PagerView>
       <View style={{ flex: 4, marginTop: 10 }}>
-        <View style={styles.midContainer}>
-          <Image source={require('../assets/abstract.png')} />
-          <Text style={{ fontWeight: '600' }}>Hey! No meds are added to be reminded!</Text>
-          <TouchableOpacity style={styles.remainderBtn}><Text style={styles.remainderBtnText}>+ Add a Reminder</Text></TouchableOpacity>
-        </View>
+        <ScrollView>
+          {data.length === 0 ?
+            <View style={styles.midContainer}>
+              <Image source={require('../assets/abstract.png')} />
+              <Text style={{ fontWeight: '600' }}>Hey! No meds are added to be reminded!</Text>
+              <TouchableOpacity style={styles.remainderBtn}><Text style={styles.remainderBtnText}>+ Add a Reminder</Text></TouchableOpacity>
+            </View> :
+            data.map((item, index) => {
+              const [isTake, setIsTake] = useState(false)
+              const [isSkip, setIsSkip] = useState(false)
+              return (
+                <View style={styles.dataContainer} key={index}>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flex: 1, alignItems: 'flex-start', gap: 10 }}>
+                      <Text style={styles.userData}>Mine</Text>
+                      <View style={{ height: 58, width: 58, backgroundColor: '#E9E9E9', borderRadius: 5 }}></View>
+                    </View>
+                    <View style={{ flex: 3, justifyContent: 'space-around' }}>
+                      <Text style={{ color: '#666666', fontWeight: '500' }}>Paracetamol</Text>
+                      <Text style={{ fontWeight: '700', fontSize: 24 }}>8:00 <Text style={{ fontSize: 14, fontWeight: '500' }}>AM</Text></Text>
+                      <View style={{ flexDirection: 'row', gap: 15 }}>
+                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>1 tablet</Text>
+                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>Before breakfast</Text>
+                      </View>
+                    </View>
+                  </View>
+                  {isTake &&
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, position: 'absolute', right: 20, top: 20 }}>
+                      <Image source={require('../assets/take.png')} />
+                      <Text style={{ color: '#1F848A', fontWeight: '500' }}>Taken</Text>
+                    </View>
+                  }
+                  {isSkip &&
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, position: 'absolute', right: 20, top: 20 }}>
+                      <Image source={require('../assets/skip.png')} />
+                      <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skipped</Text>
+                    </View>
+                  }
+                  {!isSkip && !isTake &&
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                      <TouchableOpacity onPress={() => setIsSkip(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <Image source={require('../assets/skip.png')} />
+                        <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skip</Text>
+                      </TouchableOpacity>
+                      <View style={{ borderWidth: 0.6, borderColor: '#E9E9E9' }}></View>
+                      <TouchableOpacity onPress={() => setIsTake(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                        <Image source={require('../assets/take.png')} />
+                        <Text style={{ color: '#1F848A', fontWeight: '500' }}>Take</Text>
+                      </TouchableOpacity>
+                    </View>
+                  }
+                </View>
+              )
+            })
+          }
+        </ScrollView>
       </View>
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.bottomContainerElement}>
@@ -67,8 +135,8 @@ export const Home = () => {
           <Text style={styles.bottomContainerElementTxt}>Tracker</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomContainerElement}>
-          <Image style={{position: 'relative'}} source={require('../assets/addBack.png')}/>
-          <Image style={{position: 'absolute', top:4}} source={require('../assets/add.png')}/>
+          <Image style={{ position: 'relative' }} source={require('../assets/addBack.png')} />
+          <Image style={{ position: 'absolute', top: 4 }} source={require('../assets/add.png')} />
           <Text style={styles.bottomContainerElementTxt}>Add Medicine</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomContainerElement}>
@@ -92,8 +160,8 @@ const styles = StyleSheet.create({
   },
   user: {
     backgroundColor: 'white',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     borderRadius: 10,
     borderColor: '#E9E9E9',
     borderWidth: 2,
@@ -102,12 +170,12 @@ const styles = StyleSheet.create({
     columnGap: 5
   },
   userText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   filter: {
     backgroundColor: '#1F848A',
-    paddingHorizontal: 15,
+    paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#E9E9E9',
@@ -159,11 +227,29 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 1,
     borderColor: '#E9E9E9',
+    padding: 20,
     alignItems: 'center',
     justifyContent: 'space-around',
-    padding: 20,
     rowGap: 20,
-    paddingTop: 30
+  },
+  dataContainer: {
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    borderRadius: 10,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#E9E9E9',
+    padding: 20,
+    marginBottom: 15,
+    gap: 20
+  },
+  userData: {
+    backgroundColor: '#FFECD2',
+    color: '#E78500',
+    fontWeight: '500',
+    borderRadius: 5,
+    padding: 5,
+    paddingHorizontal: 10
   },
   remainderBtn: {
     backgroundColor: '#1F848A',
@@ -183,12 +269,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center'
   },
-  bottomContainerElement:{
+  bottomContainerElement: {
     alignItems: 'center',
     flex: 1,
     rowGap: 2
   },
-  bottomContainerElementTxt:{
+  bottomContainerElementTxt: {
     color: '#C1E7EA',
     fontWeight: '500',
     fontSize: 11

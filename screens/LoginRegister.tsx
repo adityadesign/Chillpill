@@ -1,10 +1,66 @@
 import { useState } from "react"
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Image, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { FIREBASE_AUTH } from '../firebase/Firebase.config';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
+
 
 export const LoginRegister = ({ navigation }) => {
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [toggleBtn, setToggleBtn] = useState(true)
   const [toggleRegister, setToggleRegister] = useState(false)
+  const [passwordMatch, setPasswordMatch] = useState(true)
+  const [error, setError] = useState(false)
+  const auth = FIREBASE_AUTH;
+
+  //Function for new User Registration
+  const signUp = async () => {
+    setLoading(true);
+    setPasswordMatch(true)
+    setError(false)
+    if (password === confirmPassword) {
+      try {
+        const response = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
+      } catch (err) {
+        console.log(err)
+        setError(true)
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      console.log('Password does not matches')
+      setLoading(false)
+      setPasswordMatch(false)
+    }
+  };
+
+  //Function for User Login
+  const signIn = async () => {
+    setLoading(true);
+    setError(false)
+    try {
+      const response = await signInWithEmailAndPassword(auth, email, password);
+      setIsSignedIn(true)
+      navigation.navigate('Home')
+    } catch (err) {
+      console.log(err);
+      setError(true)
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topContainer}>
@@ -12,7 +68,7 @@ export const LoginRegister = ({ navigation }) => {
         <Text style={styles.brandText}>Chillpill</Text>
         <Text style={styles.subBrandText}>Medication Reminder App</Text>
       </View>
-      <View style={styles.bottomContainer}>
+      <KeyboardAvoidingView style={styles.bottomContainer}>
         <View style={styles.loginRegister}>
           <TouchableOpacity
             onPress={() => [setToggleBtn(true), setToggleRegister(false)]}
@@ -25,11 +81,41 @@ export const LoginRegister = ({ navigation }) => {
             <Text style={styles.btnText}>Register</Text>
           </TouchableOpacity>
         </View>
-        <TextInput style={styles.textInput} placeholder='Email' />
-        <TextInput style={styles.textInput} placeholder='Password' secureTextEntry={true} />
-        {toggleRegister && <TextInput style={styles.textInput} placeholder='Confirm Password' secureTextEntry={true} />}
-        <TouchableOpacity style={styles.submitBtn} onPress={() => navigation.navigate('Home')}><Text style={styles.submitBtnText}>{!toggleRegister ? 'Login' : 'Register'}</Text></TouchableOpacity>
-      </View>
+        <TextInput
+          style={styles.textInput}
+          placeholder='Email'
+          autoCapitalize="none"
+          value={email}
+          onChangeText={text => setEmail(text)}
+        />
+        <TextInput
+          style={styles.textInput}
+          placeholder='Password'
+          autoCapitalize="none"
+          value={password}
+          secureTextEntry={true}
+          onChangeText={text => setPassword(text)}
+        />
+        {toggleRegister &&
+          <TextInput
+            style={styles.textInput}
+            placeholder='Confirm Password'
+            autoCapitalize="none"
+            value={confirmPassword}
+            secureTextEntry={true}
+            onChangeText={text => setConfirmPassword(text)}
+          />}
+        {loading ? (
+          <ActivityIndicator
+            color="#1F848A"
+            size={40}
+          />
+        ) :
+          <TouchableOpacity style={styles.submitBtn} onPress={() => toggleBtn ? signIn() : signUp()}>
+            <Text style={styles.submitBtnText}>{!toggleRegister ? 'Login' : 'Register'}</Text>
+          </TouchableOpacity>
+        }
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
