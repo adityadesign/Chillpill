@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, Text, View, Image, StatusBar, TouchableOpacity, Button } from 'react-native';
 import { LoginRegister } from './screens/LoginRegister';
 import { Home } from './screens/Home';
+import { AddMedicineForm } from './screens/AddMedicineForm';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,8 @@ export default function App(): JSX.Element {
             headerBackVisible: false,
             headerRight: () => <HomeNavRight />
           }} />
+        <Stack.Screen name='AddMedicineForm' component={AddMedicineForm} 
+          options={{ headerShown: false }}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

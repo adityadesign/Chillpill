@@ -3,7 +3,7 @@ import { addDays, eachDayOfInterval, eachWeekOfInterval, format, subDays } from 
 import PagerView from 'react-native-pager-view'
 import { useState } from 'react'
 
-export const Home = () => {
+export const Home = ({navigation}) => {
   const today = new Date()
   const [selectedDay, setSelectedDay] = useState(today)
   const data = [
@@ -134,7 +134,7 @@ export const Home = () => {
           <Image source={require('../assets/Vector.png')} />
           <Text style={styles.bottomContainerElementTxt}>Tracker</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomContainerElement}>
+        <TouchableOpacity style={styles.bottomContainerElement} onPress={()=>navigation.navigate('AddMedicineForm')}>
           <Image style={{ position: 'relative' }} source={require('../assets/addBack.png')} />
           <Image style={{ position: 'absolute', top: 4 }} source={require('../assets/add.png')} />
           <Text style={styles.bottomContainerElementTxt}>Add Medicine</Text>
