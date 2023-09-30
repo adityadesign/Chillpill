@@ -214,9 +214,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#1F848A',
     color: '#FFFFFF',
     borderRadius: 50,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    marginHorizontal: 5,
+    height: 34,
+    width: 34,
     textAlign: 'center',
     textAlignVertical: 'center'
   },

@@ -1,6 +1,6 @@
 import { Calendar } from 'react-native-calendars';
 import { View, Text, FlatList, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native'
-import { CalenderInput } from './CalenderInput';
+import { CalenderInput } from './utils/CalenderInput';
 import { useState } from 'react'
 
 export const Stage2 = () => {
@@ -8,18 +8,28 @@ export const Stage2 = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalTxt, setModalTxt] = useState('')
   const [tempDate, setTempDate] = useState('')
-  const [selected, setSelected] = useState('');
+  const [selectedFrom, setSelectedFrom] = useState('')
+  const [selectedTo, setSelectedTo] = useState('')
 
   const toggleModal = (text: string) => {
     setModalTxt(text)
     setModalVisible(true)
   }
 
+  const handleApply = () => {
+    if(modalTxt==='From'){
+      setSelectedFrom(tempDate)
+    } else if(modalTxt==='To'){
+      setSelectedTo(tempDate)
+    } 
+    setModalVisible(false)
+  }
+
   return (
     <>
       <View style={styles.firstContainer}>
-        <CalenderInput props={'From'} selected={selected} toggleModal={() => toggleModal('From')} />
-        <CalenderInput props={'To'} selected={selected} toggleModal={() => toggleModal('To')} />
+        <CalenderInput props={'From'} selected={selectedFrom} toggleModal={() => toggleModal('From')} />
+        <CalenderInput props={'To'} selected={selectedTo} toggleModal={() => toggleModal('To')} />
       </View>
       <View>
         <Text style={styles.txt}>Select Time</Text>
@@ -46,8 +56,12 @@ export const Stage2 = () => {
               <TouchableOpacity onPress={() => setModalVisible(false)}><Image source={require('../assets/close.png')} /></TouchableOpacity>
             </View>
             <Calendar
-              onDayPress={day => { setTempDate(day.dateString) }}
-              markedDates={{ [tempDate]: { selected: true, disableTouchEvent: true, } }} />
+              onDayPress={day => { 
+                if(modalTxt==='From') setTempDate(day.dateString)
+                else if (modalTxt==='To') setTempDate(day.dateString)
+              }}
+              markedDates={{ [tempDate]: { selected: true, disableTouchEvent: true, } }} 
+              />
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingVertical: 15, gap: 15 }}>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
@@ -56,7 +70,7 @@ export const Stage2 = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, { backgroundColor: '#1F848A' }]}>
-                <Text onPress={()=>[setSelected(tempDate), setModalVisible(false)]} style={{ color: 'white', fontWeight: '500', fontSize: 13 }}>Apply</Text>
+                <Text onPress={() => handleApply()} style={{ color: 'white', fontWeight: '500', fontSize: 13 }}>Apply</Text>
               </TouchableOpacity>
             </View>
           </View>

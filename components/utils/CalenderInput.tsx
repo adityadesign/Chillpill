@@ -7,7 +7,7 @@ export const CalenderInput = ({ props, toggleModal, selected }) => {
       <View style={styles.calenderInput}>
         <TextInput
           value={selected}
-          placeholder='DD-MM-YYYY' />
+          placeholder='YYYY-MM-DD' />
         <View style={styles.calenderInputIcon}>
           <View style={styles.separator}></View>
           <TouchableOpacity onPress={() => toggleModal()}>
