@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FlatList, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Switch } from "react-native"
 import { Stage1 } from "../components/Stage1";
+import { Stage2 } from "../components/Stage2";
 
 export const AddMedicineForm = () => {
   const [stage, setStage] = useState(1)
@@ -8,28 +9,32 @@ export const AddMedicineForm = () => {
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1, padding: 20 }}>
       <View style={styles.topContainer}>
-        <TouchableOpacity style={styles.topContainerElement}>
+        <TouchableOpacity style={styles.topContainerElement} onPress={()=>setStage(prev => prev-1)}>
           <Image source={require('../assets/leftArrow.png')} />
           <Text style={styles.topContainerText}>Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.topContainerElement}>
+        <TouchableOpacity style={styles.topContainerElement} onPress={()=>setStage(prev => prev+1)}>
           <Text style={styles.topContainerText}>Next</Text>
           <Image source={require('../assets/rightArrow.png')} />
         </TouchableOpacity>
       </View>
       <View style={{ paddingTop: 10, paddingBottom: 25 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
-          <Text style={styles.headingTxt}>Basic Info</Text>
-          <Text style={styles.subHeadingTxt}>(1/3)</Text>
+          <Text style={styles.headingTxt}>
+            {stage === 1 && 'Basic Info'}
+            {stage === 2 && 'Select Date/Time'}
+          </Text>
+          <Text style={styles.subHeadingTxt}>({stage}/3)</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 5, paddingVertical: 5 }}>
           <View style={styles.progress}></View>
-          <View style={[styles.progress, { backgroundColor: '#E9E9E9' }]}></View>
-          <View style={[styles.progress, { backgroundColor: '#E9E9E9' }]}></View>
+          <View style={[styles.progress, stage < 2 && { backgroundColor: '#E9E9E9' }]}></View>
+          <View style={[styles.progress, stage < 3 && { backgroundColor: '#E9E9E9' }]}></View>
         </View>
       </View>
       <ScrollView>
         {stage === 1 && <Stage1/>}
+        {stage === 2 && <Stage2/>}
       </ScrollView>
       <TouchableOpacity style={styles.nextBtn} onPress={()=>setStage(prev => prev+1)}>
         <Text style={styles.nextBtnTxt}>Next</Text>

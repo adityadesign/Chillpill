@@ -1,5 +1,6 @@
 import { FlatList, Image, Text, TextInput, TouchableOpacity, View, StyleSheet, Switch } from "react-native"
 import {useState} from 'react'
+
 export const Stage1 = () => {
   const medType = ['Tablet', 'Syrup', 'Powder', 'Salve']
   const FamMember = ['Me', 'Dad', 'Mom']
