@@ -5,13 +5,12 @@ import * as ImagePicker from 'expo-image-picker';
 export const Stage1 = () => {
   const medTypeArr = ['Tablet', 'Syrup', 'Powder', 'Salve']
   const FamMember = ['Me', 'Dad', 'Mom']
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
   const [medName, setMedName] = useState('')
   const [medType, setMedType] = useState('')
   const [famMember, setFamMember] = useState('')
   const [imageSource, setImageSource] = useState(null);
+  const [isUpload, setIsUpload] = useState(false);
 
   const handleImage = async () => {
     let result = await ImagePicker.launchCameraAsync({
@@ -20,13 +19,12 @@ export const Stage1 = () => {
       aspect: [1, 1],
       quality: 0.5,
     });
-
-    console.log(result);
-
     if (!result.canceled) {
       setImageSource(result.assets[0].uri);
     }
   }
+
+  const toggleSwitch = () => setIsUpload(previousState => !previousState);
 
   return (
     <>
@@ -79,10 +77,10 @@ export const Stage1 = () => {
         <Text style={{ fontWeight: '500', color: '#333333' }}>Do you want to use uploaded image?</Text>
         <Switch
           trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={isEnabled ? '#1F848A' : '#f4f3f4'}
+          thumbColor={isUpload ? '#1F848A' : '#f4f3f4'}
           ios_backgroundColor="#3e3e3e"
           onValueChange={toggleSwitch}
-          value={isEnabled}
+          value={isUpload}
         />
       </View>
     </>
