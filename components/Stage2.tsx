@@ -1,6 +1,6 @@
 import { Calendar } from 'react-native-calendars';
 import { View, Text, FlatList, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native'
-import { CalenderInput } from './utils/CalenderInput';
+import { CalenderInput } from '../utils/CalenderInput';
 import { useState } from 'react'
 
 export const Stage2 = () => {

@@ -32,6 +32,7 @@ export const LoginRegister = ({ navigation }) => {
           email,
           password,
         );
+        console.log(response)
       } catch (err) {
         console.log(err)
         setError(true)
@@ -53,8 +54,9 @@ export const LoginRegister = ({ navigation }) => {
       const response = await signInWithEmailAndPassword(auth, email, password);
       setIsSignedIn(true)
       navigation.navigate('Home')
+      console.log(response)
     } catch (err) {
-      console.log(err);
+      console.log(err.code);
       setError(true)
     } finally {
       setLoading(false);

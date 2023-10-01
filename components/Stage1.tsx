@@ -1,17 +1,29 @@
 import { FlatList, Image, Text, TextInput, TouchableOpacity, View, StyleSheet, Switch } from "react-native"
-import {useState} from 'react'
+import { useState } from 'react'
 
 export const Stage1 = () => {
-  const medType = ['Tablet', 'Syrup', 'Powder', 'Salve']
+  const medTypeArr = ['Tablet', 'Syrup', 'Powder', 'Salve']
   const FamMember = ['Me', 'Dad', 'Mom']
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+  const [medName, setMedName] = useState('')
+  const [medType, setMedType] = useState('')
+  const [famMember, setFamMember] = useState('')
+  const [imageSource, setImageSource] = useState(null);
+
+  const handleImage = () => {
+
+  }
+
   return (
     <>
       <View style={{ paddingTop: 10, paddingBottom: 20 }}>
         <Text style={styles.formTxt}>Medication Name</Text>
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Search med/Enter manually" />
+          <TextInput placeholder="Search med/Enter manually"
+            onChangeText={text => setMedName(text)}
+            value={medName} />
           <Image source={require('../assets/search.png')} />
         </View>
       </View>
@@ -19,8 +31,12 @@ export const Stage1 = () => {
         <Text style={styles.formTxt}>Med Type</Text>
         <FlatList
           horizontal={true}
-          data={medType}
-          renderItem={({ item }) => <TouchableOpacity><Text style={styles.medType}>{item}</Text></TouchableOpacity>}
+          data={medTypeArr}
+          renderItem={({ item }) =>
+            <TouchableOpacity onPress={() => setMedType(item)}>
+              <Text style={[styles.medType, medType === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
+            </TouchableOpacity>
+          }
         />
       </View>
       <View style={{ paddingTop: 10, paddingBottom: 20 }}>
@@ -28,12 +44,16 @@ export const Stage1 = () => {
         <FlatList
           horizontal={true}
           data={FamMember}
-          renderItem={({ item }) => <TouchableOpacity><Text style={styles.medType}>{item}</Text></TouchableOpacity>}
+          renderItem={({ item }) =>
+            <TouchableOpacity onPress={() => setFamMember(item)}>
+              <Text style={[styles.medType, famMember === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
+            </TouchableOpacity>
+          }
         />
       </View>
       <View style={{ paddingTop: 10, paddingBottom: 20 }}>
         <Text style={styles.formTxt}>Upload Image</Text>
-        <TouchableOpacity style={styles.uploadImage}>
+        <TouchableOpacity style={styles.uploadImage} onPress={()=>handleImage()}>
           <Image source={require('../assets/camera.png')} />
         </TouchableOpacity>
       </View>

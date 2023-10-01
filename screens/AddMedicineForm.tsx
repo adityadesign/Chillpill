@@ -5,17 +5,23 @@ import { Stage2 } from "../components/Stage2";
 import { Stage3 } from "../components/Stage3";
 import { StageSuccess } from "../components/StageSuccess";
 
-export const AddMedicineForm = () => {
+export const AddMedicineForm = ({navigation}) => {
   const [stage, setStage] = useState(1)
-  const [successStage, setSuccessStage] = useState(false)
+
+  const handleBack = () => {
+    setStage(prev => prev - 1)
+    if(stage === 1) navigation.navigate("Home")
+  }
+
   const handleBtn = () => {
     if (stage < 4) setStage(prev => prev + 1)
-    else if (stage === 4) setSuccessStage(true)
+    else if (stage === 4) navigation.navigate('Home')
   }
+
   return (
     <SafeAreaView style={{ backgroundColor: 'white', flex: 1, padding: 20 }}>
       <View style={styles.topContainer}>
-        <TouchableOpacity style={styles.topContainerElement} onPress={() => setStage(prev => prev - 1)}>
+        <TouchableOpacity style={styles.topContainerElement} onPress={handleBack}>
           <Image source={require('../assets/leftArrow.png')} />
           <Text style={styles.topContainerText}>Back</Text>
         </TouchableOpacity>
@@ -43,7 +49,7 @@ export const AddMedicineForm = () => {
         {stage === 1 && <Stage1 />}
         {stage === 2 && <Stage2 />}
         {stage === 3 && <Stage3 />}
-        {stage === 4 && successStage && <StageSuccess />}
+        {stage === 4 && <StageSuccess />}
       </ScrollView>
       <TouchableOpacity style={styles.nextBtn} onPress={() => handleBtn()}>
         <Text style={styles.nextBtnTxt}>
