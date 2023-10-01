@@ -1,5 +1,6 @@
 import { FlatList, Image, Text, TextInput, TouchableOpacity, View, StyleSheet, Switch } from "react-native"
 import { useState } from 'react'
+import * as ImagePicker from 'expo-image-picker';
 
 export const Stage1 = () => {
   const medTypeArr = ['Tablet', 'Syrup', 'Powder', 'Salve']
@@ -12,8 +13,19 @@ export const Stage1 = () => {
   const [famMember, setFamMember] = useState('')
   const [imageSource, setImageSource] = useState(null);
 
-  const handleImage = () => {
+  const handleImage = async () => {
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
 
+    console.log(result);
+
+    if (!result.canceled) {
+      setImageSource(result.assets[0].uri);
+    }
   }
 
   return (
@@ -53,9 +65,15 @@ export const Stage1 = () => {
       </View>
       <View style={{ paddingTop: 10, paddingBottom: 20 }}>
         <Text style={styles.formTxt}>Upload Image</Text>
-        <TouchableOpacity style={styles.uploadImage} onPress={()=>handleImage()}>
-          <Image source={require('../assets/camera.png')} />
-        </TouchableOpacity>
+        <View style={{flexDirection: 'row', gap: 10}}>
+          {imageSource &&
+            <View style={styles.uploadImage}>
+              <Image source={{ uri: imageSource }} style={styles.image} />
+            </View>}
+          <TouchableOpacity style={styles.uploadImage} onPress={() => handleImage()}>
+            <Image source={require('../assets/camera.png')} />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={{ paddingBottom: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text style={{ fontWeight: '500', color: '#333333' }}>Do you want to use uploaded image?</Text>
@@ -109,4 +127,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10
   },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+  }
 })
