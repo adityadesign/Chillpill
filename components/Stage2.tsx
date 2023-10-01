@@ -8,8 +8,10 @@ export const Stage2 = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalTxt, setModalTxt] = useState('')
   const [tempDate, setTempDate] = useState('')
+
   const [selectedFrom, setSelectedFrom] = useState('')
   const [selectedTo, setSelectedTo] = useState('')
+  const [time, setTime] = useState('')
 
   const toggleModal = (text: string) => {
     setModalTxt(text)
@@ -17,11 +19,11 @@ export const Stage2 = () => {
   }
 
   const handleApply = () => {
-    if(modalTxt==='From'){
+    if (modalTxt === 'From') {
       setSelectedFrom(tempDate)
-    } else if(modalTxt==='To'){
+    } else if (modalTxt === 'To') {
       setSelectedTo(tempDate)
-    } 
+    }
     setModalVisible(false)
   }
 
@@ -38,7 +40,11 @@ export const Stage2 = () => {
             showsHorizontalScrollIndicator={false}
             horizontal={true}
             data={defaultTime}
-            renderItem={({ item }) => <TouchableOpacity><Text style={styles.medType}>{item}</Text></TouchableOpacity>}
+            renderItem={({ item }) =>
+              <TouchableOpacity onPress={() => setTime(item)}>
+                <Text style={[styles.time, time === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
+              </TouchableOpacity>
+            }
           />
         </View>
       </View>
@@ -56,12 +62,12 @@ export const Stage2 = () => {
               <TouchableOpacity onPress={() => setModalVisible(false)}><Image source={require('../assets/close.png')} /></TouchableOpacity>
             </View>
             <Calendar
-              onDayPress={day => { 
-                if(modalTxt==='From') setTempDate(day.dateString)
-                else if (modalTxt==='To') setTempDate(day.dateString)
+              onDayPress={day => {
+                if (modalTxt === 'From') setTempDate(day.dateString)
+                else if (modalTxt === 'To') setTempDate(day.dateString)
               }}
-              markedDates={{ [tempDate]: { selected: true, disableTouchEvent: true, } }} 
-              />
+              markedDates={{ [tempDate]: { selected: true, disableTouchEvent: true, } }}
+            />
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingVertical: 15, gap: 15 }}>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
@@ -91,7 +97,7 @@ const styles = StyleSheet.create({
     color: '#333333',
     fontWeight: '500'
   },
-  medType: {
+  time: {
     backgroundColor: '#F0F0F0',
     height: 40,
     width: 78,
