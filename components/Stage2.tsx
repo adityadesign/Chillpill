@@ -1,9 +1,10 @@
 import { Calendar } from 'react-native-calendars';
-import { View, Text, FlatList, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native'
+import { View, Text, FlatList, Modal, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native'
 import { CalenderInput } from '../utils/CalenderInput';
 import { useState } from 'react'
 
-export const Stage2 = () => {
+export const Stage2 = ({ nextStage }) => {
+
   const defaultTime = ['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '06:00 PM', '09:00 PM']
   const [modalVisible, setModalVisible] = useState(false)
   const [modalTxt, setModalTxt] = useState('')
@@ -28,26 +29,28 @@ export const Stage2 = () => {
   }
 
   return (
-    <>
-      <View style={styles.firstContainer}>
-        <CalenderInput props={'From'} selected={selectedFrom} toggleModal={() => toggleModal('From')} />
-        <CalenderInput props={'To'} selected={selectedTo} toggleModal={() => toggleModal('To')} />
-      </View>
-      <View>
-        <Text style={styles.txt}>Select Time</Text>
-        <View>
-          <FlatList
-            showsHorizontalScrollIndicator={false}
-            horizontal={true}
-            data={defaultTime}
-            renderItem={({ item }) =>
-              <TouchableOpacity onPress={() => setTime(item)}>
-                <Text style={[styles.time, time === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
-              </TouchableOpacity>
-            }
-          />
+    <View style={{ flex: 1 }}>
+      <ScrollView>
+        <View style={styles.firstContainer}>
+          <CalenderInput props={'From'} selected={selectedFrom} toggleModal={() => toggleModal('From')} />
+          <CalenderInput props={'To'} selected={selectedTo} toggleModal={() => toggleModal('To')} />
         </View>
-      </View>
+        <View>
+          <Text style={styles.txt}>Select Time</Text>
+          <View>
+            <FlatList
+              showsHorizontalScrollIndicator={false}
+              horizontal={true}
+              data={defaultTime}
+              renderItem={({ item }) =>
+                <TouchableOpacity onPress={() => setTime(item)}>
+                  <Text style={[styles.time, time === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
+                </TouchableOpacity>
+              }
+            />
+          </View>
+        </View>
+      </ScrollView>
       <Modal
         animationType="fade"
         visible={modalVisible}
@@ -82,7 +85,7 @@ export const Stage2 = () => {
           </View>
         </View>
       </Modal>
-    </>
+    </View>
   )
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, Switch, TouchableOpacity, StyleSheet, TextInput } from 'react-native'
-import { Dropdown } from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown'
 
 export const Stage3 = () => {
   const data = [

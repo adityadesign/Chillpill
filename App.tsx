@@ -4,6 +4,8 @@ import { StyleSheet, Text, View, Image, StatusBar, TouchableOpacity, Button } fr
 import { LoginRegister } from './screens/LoginRegister';
 import { Home } from './screens/Home';
 import { AddMedicineForm } from './screens/AddMedicineForm';
+import { store } from './src/store'
+import { Provider } from 'react-redux'
 
 const Stack = createNativeStackNavigator();
 
@@ -25,20 +27,22 @@ export default function App(): JSX.Element {
     )
   }
   return (
-    <NavigationContainer>
-      <StatusBar backgroundColor='#1F848A'/>
-      <Stack.Navigator initialRouteName='Login' >
-        <Stack.Screen name="Login" component={LoginRegister} options={{ headerShown: false }} />
-        <Stack.Screen name="Home" component={Home}
-          options={{
-            headerTitle: () => <HomeNav />,
-            headerBackVisible: false,
-            headerRight: () => <HomeNavRight />
-          }} />
-        <Stack.Screen name='AddMedicineForm' component={AddMedicineForm} 
-          options={{ headerShown: false }}/>
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <StatusBar backgroundColor='#1F848A' />
+        <Stack.Navigator initialRouteName='Login' >
+          <Stack.Screen name="Login" component={LoginRegister} options={{ headerShown: false }} />
+          <Stack.Screen name="Home" component={Home}
+            options={{
+              headerTitle: () => <HomeNav />,
+              headerBackVisible: false,
+              headerRight: () => <HomeNavRight />
+            }} />
+          <Stack.Screen name='AddMedicineForm' component={AddMedicineForm}
+            options={{ headerShown: false }} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }
 

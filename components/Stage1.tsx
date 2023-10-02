@@ -1,8 +1,8 @@
-import { FlatList, Image, Text, TextInput, TouchableOpacity, View, StyleSheet, Switch } from "react-native"
+import { FlatList, Image, Text, TextInput, TouchableOpacity, View, StyleSheet, Switch, ScrollView } from "react-native"
 import { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 
-export const Stage1 = () => {
+export const Stage1 = ({nextStage}) => {
   const medTypeArr = ['Tablet', 'Syrup', 'Powder', 'Salve']
   const FamMember = ['Me', 'Dad', 'Mom']
 
@@ -24,11 +24,12 @@ export const Stage1 = () => {
     }
   }
 
-  const toggleSwitch = () => setIsUpload(previousState => !previousState);
+  const toggleSwitch = () => setIsUpload(previousState => !previousState)
 
   return (
-    <>
-      <View style={{ paddingTop: 10, paddingBottom: 20 }}>
+    <View style={{flex:1}}>
+      <ScrollView>
+      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
         <Text style={styles.formTxt}>Medication Name</Text>
         <View style={styles.inputContainer}>
           <TextInput placeholder="Search med/Enter manually"
@@ -37,7 +38,7 @@ export const Stage1 = () => {
           <Image source={require('../assets/search.png')} />
         </View>
       </View>
-      <View style={{ paddingTop: 10, paddingBottom: 20 }}>
+      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
         <Text style={styles.formTxt}>Med Type</Text>
         <FlatList
           horizontal={true}
@@ -49,7 +50,7 @@ export const Stage1 = () => {
           }
         />
       </View>
-      <View style={{ paddingTop: 10, paddingBottom: 20 }}>
+      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
         <Text style={styles.formTxt}>Select Family Member</Text>
         <FlatList
           horizontal={true}
@@ -61,9 +62,9 @@ export const Stage1 = () => {
           }
         />
       </View>
-      <View style={{ paddingTop: 10, paddingBottom: 20 }}>
+      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
         <Text style={styles.formTxt}>Upload Image</Text>
-        <View style={{flexDirection: 'row', gap: 10}}>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
           {imageSource &&
             <View style={styles.uploadImage}>
               <Image source={{ uri: imageSource }} style={styles.image} />
@@ -73,7 +74,7 @@ export const Stage1 = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{ paddingBottom: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View style={{ paddingBottom: 20, flexDirection: 'row', flex:1, alignItems: 'center', justifyContent: 'space-between' }}>
         <Text style={{ fontWeight: '500', color: '#333333' }}>Do you want to use uploaded image?</Text>
         <Switch
           trackColor={{ false: '#767577', true: '#81b0ff' }}
@@ -83,7 +84,8 @@ export const Stage1 = () => {
           value={isUpload}
         />
       </View>
-    </>
+      </ScrollView>
+    </View>
   )
 }
 
