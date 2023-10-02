@@ -1,21 +1,41 @@
 import { useState } from "react";
-import { FlatList, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Switch } from "react-native"
+import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, ScrollView } from "react-native"
 import { Stage1 } from "../components/Stage1";
 import { Stage2 } from "../components/Stage2";
 import { Stage3 } from "../components/Stage3";
 import { StageSuccess } from "../components/StageSuccess";
+import { arrayUnion, doc, updateDoc } from "firebase/firestore"; 
+import { FIREBASE_DB } from "../firebase/Firebase.config";
 
-export const AddMedicineForm = ({navigation}) => {
+interface FormData1 {
+  medName: string,
+  medType: string,
+  person: string,
+  image: string,
+  upload: boolean
+}
+
+export const AddMedicineForm = ({ navigation, route }) => {
   const [stage, setStage] = useState(1)
+  const [formData1, setFormData1] = useState<FormData1 | null>()
+  const [formData2, setFormData2] = useState({})
+  const [formData3, setFormData3] = useState({})
 
   const handleBack = () => {
     setStage(prev => prev - 1)
-    if(stage === 1) navigation.navigate("Home")
+    if (stage === 1) navigation.navigate("Home")
   }
 
-  const handleBtn = () => {
+  const handleSubmit = async () => {
     if (stage < 4) setStage(prev => prev + 1)
-    else if (stage === 4) navigation.navigate('Home')
+    else if (stage === 4) {
+      navigation.navigate('Home', {uid: `${route.params?.uid}`})
+
+      const medicineRef = doc(FIREBASE_DB, "users", `${route.params?.uid}`)
+      await updateDoc(medicineRef, {
+        medicines: arrayUnion({test: 4})
+      });
+    }
   }
 
   return (
@@ -51,7 +71,7 @@ export const AddMedicineForm = ({navigation}) => {
         {stage === 3 && <Stage3 />}
         {stage === 4 && <StageSuccess />}
       </ScrollView>
-      <TouchableOpacity style={styles.nextBtn} onPress={() => handleBtn()}>
+      <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
         <Text style={styles.nextBtnTxt}>
           {stage < 3 && 'Next'}
           {stage === 3 && 'Submit'}

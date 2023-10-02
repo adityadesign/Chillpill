@@ -1,10 +1,13 @@
 import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image, ScrollView } from 'react-native'
 import { addDays, eachDayOfInterval, eachWeekOfInterval, format, subDays } from 'date-fns'
 import PagerView from 'react-native-pager-view'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { collection, doc, getDoc } from "firebase/firestore";
+import { FIREBASE_DB } from '../firebase/Firebase.config';
 
-export const Home = ({navigation}) => {
+export const Home = ({ navigation, route }) => {
   const today = new Date()
+  const uid = route.params?.uid
   const [selectedDay, setSelectedDay] = useState(today)
   const data = [
     {
@@ -23,6 +26,15 @@ export const Home = ({navigation}) => {
       image: '',
     },
   ]
+
+  const getData = async () => {
+    const querySnapshot = await getDoc(doc(FIREBASE_DB, "users", `${uid}`));
+    console.log(querySnapshot.data())
+  }
+
+  useEffect(() => {
+    getData()
+  }, [])
 
   const dates = eachWeekOfInterval({
     start: subDays(today, 14),
@@ -134,7 +146,7 @@ export const Home = ({navigation}) => {
           <Image source={require('../assets/Vector.png')} />
           <Text style={styles.bottomContainerElementTxt}>Tracker</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomContainerElement} onPress={()=>navigation.navigate('AddMedicineForm')}>
+        <TouchableOpacity style={styles.bottomContainerElement} onPress={() => navigation.navigate('AddMedicineForm', { uid: uid })}>
           <Image style={{ position: 'relative' }} source={require('../assets/addBack.png')} />
           <Image style={{ position: 'absolute', top: 4 }} source={require('../assets/add.png')} />
           <Text style={styles.bottomContainerElementTxt}>Add Medicine</Text>

@@ -1,12 +1,12 @@
 import { useState } from "react"
 import { ActivityIndicator, Image, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { FIREBASE_AUTH } from '../firebase/Firebase.config';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../firebase/Firebase.config';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-
+import { doc, setDoc } from "firebase/firestore"; 
 
 export const LoginRegister = ({ navigation }) => {
   const [isSignedIn, setIsSignedIn] = useState(false)
@@ -32,6 +32,10 @@ export const LoginRegister = ({ navigation }) => {
           email,
           password,
         );
+        //Set new Data for new Users
+        await setDoc(doc(FIREBASE_DB, "users", `${response.user.uid}`), {
+          medicines: []
+        });
         console.log(response)
       } catch (err) {
         console.log(err)
@@ -53,8 +57,8 @@ export const LoginRegister = ({ navigation }) => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
       setIsSignedIn(true)
-      navigation.navigate('Home')
-      console.log(response)
+      navigation.navigate('Home', {uid: `${response.user.uid}`})
+      console.log(response.user.uid)
     } catch (err) {
       console.log(err.code);
       setError(true)

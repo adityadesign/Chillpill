@@ -15,10 +15,11 @@ export const Stage3 = () => {
     { label: '09', value: '9' },
     { label: '10', value: '10' },
   ]
-  const [value, setValue] = useState(null);
+  const [dose, setDose] = useState(null)
+  const [pills, setPills] = useState('')
   const [isAfter, setIsAfter] = useState(false)
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const [notify, setNotify] = useState(false);
+  const toggleSwitch = () => setNotify(previousState => !previousState);
 
   return (
     <>
@@ -30,15 +31,17 @@ export const Stage3 = () => {
           labelField="label"
           valueField="value"
           placeholder="Select"
-          value={value}
+          value={dose}
           onChange={item => {
-            setValue(item.value);
+            setDose(item.value);
           }}
           data={data} />
         <Text style={styles.txt}>Current number of Pills</Text>
         <TextInput
           placeholder='Ex: 10, 15, 20...'
-          style={styles.input} />
+          style={styles.input}
+          value={pills}
+          onChangeText={text => setPills(text)} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
           <Text style={styles.txt}>Is it Before food?</Text>
           <View style={{ flexDirection: 'row', borderWidth: 1, borderRadius: 8, borderColor: '#E9E9E9', padding: 5 }}>
@@ -54,10 +57,10 @@ export const Stage3 = () => {
           <Text style={styles.txt}>Notify me when Tablets are empty</Text>
           <Switch
             trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={isEnabled ? '#1F848A' : '#f4f3f4'}
+            thumbColor={notify ? '#1F848A' : '#f4f3f4'}
             ios_backgroundColor="#3e3e3e"
             onValueChange={toggleSwitch}
-            value={isEnabled} />
+            value={notify} />
         </View>
       </View>
     </>
