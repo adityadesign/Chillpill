@@ -2,6 +2,8 @@ import { Calendar } from 'react-native-calendars';
 import { View, Text, FlatList, Modal, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native'
 import { CalenderInput } from '../utils/CalenderInput';
 import { useState } from 'react'
+import { useDispatch } from 'react-redux';
+import { setMedicineDetails } from '../features/userMedSlice';
 
 export const Stage2 = ({ nextStage }) => {
 
@@ -9,6 +11,7 @@ export const Stage2 = ({ nextStage }) => {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalTxt, setModalTxt] = useState('')
   const [tempDate, setTempDate] = useState('')
+  const dispatch = useDispatch()
 
   const [selectedFrom, setSelectedFrom] = useState('')
   const [selectedTo, setSelectedTo] = useState('')
@@ -26,6 +29,15 @@ export const Stage2 = ({ nextStage }) => {
       setSelectedTo(tempDate)
     }
     setModalVisible(false)
+  }
+
+  const handleSubmit =()=>{
+    nextStage()
+    dispatch(setMedicineDetails({
+      fromDate: selectedFrom,
+      toDate: selectedTo,
+      time: time
+    }))
   }
 
   return (
@@ -85,6 +97,9 @@ export const Stage2 = ({ nextStage }) => {
           </View>
         </View>
       </Modal>
+      <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
+        <Text style={styles.nextBtnTxt}>Next</Text>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -134,5 +149,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     paddingHorizontal: 25
+  },
+  nextBtn: {
+    backgroundColor: '#1F848A',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  nextBtnTxt: {
+    color: 'white',
+    fontWeight: '500'
   }
 })

@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { View, Text, Switch, TouchableOpacity, StyleSheet, TextInput } from 'react-native'
-import { Dropdown } from 'react-native-element-dropdown'
+import { View, Text, Switch, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native'
+import { Dropdown } from 'react-native-element-dropdown';
+import { useDispatch } from 'react-redux';
+import { setMedicineDetails } from '../features/userMedSlice';
 
-export const Stage3 = () => {
+export const Stage3 = ({nextStage}) => {
   const data = [
     { label: '01', value: '1' },
     { label: '02', value: '2' },
@@ -17,16 +19,28 @@ export const Stage3 = () => {
   ]
   const [dose, setDose] = useState(null)
   const [pills, setPills] = useState('')
-  const [isAfter, setIsAfter] = useState(false)
+  const [isBefore, setIsBefore] = useState(false)
   const [notify, setNotify] = useState(false);
   const toggleSwitch = () => setNotify(previousState => !previousState);
+  const dispatch = useDispatch()
+
+  const handleSubmit =()=>{
+    nextStage()
+    dispatch(setMedicineDetails({
+      dose: dose,
+      numberOfPills: pills,
+      beforeFood: isBefore,
+      notify: notify
+    }))
+  }
 
   return (
     <>
-      <View>
+      <ScrollView>
         <Text style={styles.txt}>Dose</Text>
         <Dropdown
           style={styles.input}
+          itemTextStyle = {{fontSize:14}}
           placeholderStyle={styles.placeholderStyle}
           labelField="label"
           valueField="value"
@@ -41,15 +55,16 @@ export const Stage3 = () => {
           placeholder='Ex: 10, 15, 20...'
           style={styles.input}
           value={pills}
+          keyboardType='number-pad'
           onChangeText={text => setPills(text)} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
           <Text style={styles.txt}>Is it Before food?</Text>
           <View style={{ flexDirection: 'row', borderWidth: 1, borderRadius: 8, borderColor: '#E9E9E9', padding: 5 }}>
-            <TouchableOpacity onPress={() => setIsAfter(false)} style={[styles.btn, !isAfter && { backgroundColor: '#1F848A' }]}>
-              <Text style={[styles.btnText, !isAfter && { color: 'white' }]}>Before</Text>
+            <TouchableOpacity onPress={() => setIsBefore(true)} style={[styles.btn, isBefore && { backgroundColor: '#1F848A' }]}>
+              <Text style={[styles.btnText, isBefore && { color: 'white' }]}>Before</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsAfter(true)} style={[styles.btn, isAfter && { backgroundColor: '#1F848A' }]}>
-              <Text style={[styles.btnText, isAfter && { color: 'white' }]}>After</Text>
+            <TouchableOpacity onPress={() => setIsBefore(false)} style={[styles.btn, !isBefore && { backgroundColor: '#1F848A' }]}>
+              <Text style={[styles.btnText, !isBefore && { color: 'white' }]}>After</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -62,7 +77,10 @@ export const Stage3 = () => {
             onValueChange={toggleSwitch}
             value={notify} />
         </View>
-      </View>
+      </ScrollView>
+      <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
+        <Text style={styles.nextBtnTxt}>Next</Text>
+      </TouchableOpacity>
     </>
   )
 }
@@ -80,7 +98,8 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     fontWeight: '500',
-    color: '#999999'
+    color: '#999999',
+    fontSize: 14
   },
   txt: {
     color: '#333333',
@@ -93,6 +112,17 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#999999',
+    fontWeight: '500'
+  },
+  nextBtn: {
+    backgroundColor: '#1F848A',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  nextBtnTxt: {
+    color: 'white',
     fontWeight: '500'
   }
 })

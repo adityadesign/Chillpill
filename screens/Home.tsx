@@ -2,39 +2,25 @@ import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image, ScrollVi
 import { addDays, eachDayOfInterval, eachWeekOfInterval, format, subDays } from 'date-fns'
 import PagerView from 'react-native-pager-view'
 import { useEffect, useState } from 'react'
-import { collection, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { FIREBASE_DB } from '../firebase/Firebase.config';
 
 export const Home = ({ navigation, route }) => {
+  const [dbData, setDbData] = useState([])
+  const [isTake, setIsTake] = useState(false)
+  const [isSkip, setIsSkip] = useState(false)
   const today = new Date()
   const uid = route.params?.uid
   const [selectedDay, setSelectedDay] = useState(today)
-  const data = [
-    {
-      medicineName: 'Paracetamol',
-      medType: 'Tablet',
-      image: '',
-    },
-    {
-      medicineName: 'Paracetamol',
-      medType: 'Tablet',
-      image: '',
-    },
-    {
-      medicineName: 'Paracetamol',
-      medType: 'Tablet',
-      image: '',
-    },
-  ]
-
-  const getData = async () => {
-    const querySnapshot = await getDoc(doc(FIREBASE_DB, "users", `${uid}`));
-    console.log(querySnapshot.data())
-  }
 
   useEffect(() => {
     getData()
-  }, [])
+  }, [dbData])
+
+  const getData = async () => {
+    const querySnapshot = await getDoc(doc(FIREBASE_DB, "users", `${uid}`));
+    setDbData(querySnapshot.data()?.medicines)
+  }
 
   const dates = eachWeekOfInterval({
     start: subDays(today, 14),
@@ -85,28 +71,31 @@ export const Home = ({ navigation, route }) => {
       </PagerView>
       <View style={{ flex: 4, marginTop: 10 }}>
         <ScrollView>
-          {data.length === 0 ?
+          {dbData.length === 0 &&
             <View style={styles.midContainer}>
               <Image source={require('../assets/abstract.png')} />
               <Text style={{ fontWeight: '600' }}>Hey! No meds are added to be reminded!</Text>
-              <TouchableOpacity style={styles.remainderBtn}><Text style={styles.remainderBtnText}>+ Add a Reminder</Text></TouchableOpacity>
-            </View> :
-            data.map((item, index) => {
-              const [isTake, setIsTake] = useState(false)
-              const [isSkip, setIsSkip] = useState(false)
+              <TouchableOpacity style={styles.remainderBtn}>
+                <Text style={styles.remainderBtnText}>+ Add a Reminder</Text>
+              </TouchableOpacity>
+            </View>
+          }
+          {dbData.length > 0 &&
+            dbData.map((item, index) => {
+              const imageSource = item.image
               return (
                 <View style={styles.dataContainer} key={index}>
                   <View style={{ flexDirection: 'row' }}>
                     <View style={{ flex: 1, alignItems: 'flex-start', gap: 10 }}>
-                      <Text style={styles.userData}>Mine</Text>
-                      <View style={{ height: 58, width: 58, backgroundColor: '#E9E9E9', borderRadius: 5 }}></View>
+                      <Text style={styles.userData}>{item.person}</Text>
+                      <Image source={{ uri: imageSource }} style={styles.image} />
                     </View>
                     <View style={{ flex: 3, justifyContent: 'space-around' }}>
-                      <Text style={{ color: '#666666', fontWeight: '500' }}>Paracetamol</Text>
-                      <Text style={{ fontWeight: '700', fontSize: 24 }}>8:00 <Text style={{ fontSize: 14, fontWeight: '500' }}>AM</Text></Text>
+                      <Text style={{ color: '#666666', fontWeight: '500' }}>{item.medName}</Text>
+                      <Text style={{ fontWeight: '700', fontSize: 24 }}>{item.time}</Text>
                       <View style={{ flexDirection: 'row', gap: 15 }}>
-                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>1 tablet</Text>
-                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>Before breakfast</Text>
+                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.dose} {item.medType}</Text>
+                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.beforeFood ? 'Before breakfast' : 'After breakfast'}</Text>
                       </View>
                     </View>
                   </View>
@@ -289,5 +278,11 @@ const styles = StyleSheet.create({
     color: '#C1E7EA',
     fontWeight: '500',
     fontSize: 11
+  },
+  image: {
+    height: 58,
+    width: 58,
+    backgroundColor: '#E9E9E9',
+    borderRadius: 5
   }
 })

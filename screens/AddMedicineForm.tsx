@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, ScrollView } from "react-native"
 import { Stage1 } from "../components/Stage1";
 import { Stage2 } from "../components/Stage2";
 import { Stage3 } from "../components/Stage3";
 import { StageSuccess } from "../components/StageSuccess";
-import { arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { arrayUnion, doc, updateDoc, getDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../firebase/Firebase.config";
+import { useSelector } from 'react-redux'
+import type { RootState } from '../src/store'
+import type { details } from '../features/userMedSlice'
 
 export const AddMedicineForm = ({ navigation, route }) => {
   const [stage, setStage] = useState(1)
+  const data: details = useSelector((state: RootState) => state.medicines.medicineDetails)
+  const medicineRef = doc(FIREBASE_DB, "users", `${route.params?.uid}`)
 
   const handleBack = () => {
     setStage(prev => prev - 1)
@@ -22,15 +27,14 @@ export const AddMedicineForm = ({ navigation, route }) => {
     else if (stage === 4) {
       navigation.navigate('Home', { uid: `${route.params?.uid}` })
 
-      const medicineRef = doc(FIREBASE_DB, "users", `${route.params?.uid}`)
       await updateDoc(medicineRef, {
-        medicines: arrayUnion({ test: 4 })
+        medicines: arrayUnion({ ...data })
       });
     }
   }
 
   return (
-    <SafeAreaView style={{ backgroundColor: 'white', flex:1, padding: 20 }}>
+    <SafeAreaView style={{ backgroundColor: 'white', flex: 1, padding: 20 }}>
       <View style={styles.topContainer}>
         <TouchableOpacity style={styles.topContainerElement} onPress={handleBack}>
           <Image source={require('../assets/leftArrow.png')} />
@@ -41,7 +45,7 @@ export const AddMedicineForm = ({ navigation, route }) => {
           <Image source={require('../assets/rightArrow.png')} />
         </TouchableOpacity>}
       </View>
-      {stage < 4 && <View style={{ paddingTop: 10, paddingBottom: 25}}>
+      {stage < 4 && <View style={{ paddingTop: 10, paddingBottom: 25 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
           <Text style={styles.headingTxt}>
             {stage === 1 && 'Basic Info'}
@@ -56,19 +60,15 @@ export const AddMedicineForm = ({ navigation, route }) => {
           <View style={[styles.progress, stage < 3 && { backgroundColor: '#E9E9E9' }]}></View>
         </View>
       </View>}
-      <View style={{flex:1}}>
-          {stage === 1 && <Stage1 nextStage={() => setStage(prev => prev + 1)} />}
-          {stage === 2 && <Stage2 nextStage={() => setStage(prev => prev + 1)}/>}
-          {stage === 3 && <Stage3 />}
-          {stage === 4 && <StageSuccess />}
+      <View style={{ flex: 1 }}>
+        {stage === 1 && <Stage1 nextStage={() => setStage(prev => prev + 1)} />}
+        {stage === 2 && <Stage2 nextStage={() => setStage(prev => prev + 1)} />}
+        {stage === 3 && <Stage3 nextStage={() => setStage(prev => prev + 1)} />}
+        {stage === 4 && <StageSuccess />}
       </View>
-      <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
-        <Text style={styles.nextBtnTxt}>
-          {stage < 3 && 'Next'}
-          {stage === 3 && 'Submit'}
-          {stage === 4 && 'Finish'}
-        </Text>
-      </TouchableOpacity>
+      {stage === 4 && <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
+        <Text style={styles.nextBtnTxt}>Finish</Text>
+      </TouchableOpacity>}
     </SafeAreaView>
   )
 }

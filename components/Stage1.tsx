@@ -1,14 +1,17 @@
-import { FlatList, Image, Text, TextInput, TouchableOpacity, View, StyleSheet, Switch, ScrollView } from "react-native"
+import { FlatList, Image, Text, TextInput, TouchableOpacity, View, Alert, StyleSheet, Switch, ScrollView } from "react-native"
 import { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
+import { useDispatch } from 'react-redux';
+import { setMedicineDetails } from '../features/userMedSlice'
 
-export const Stage1 = ({nextStage}) => {
+export const Stage1 = ({ nextStage }) => {
   const medTypeArr = ['Tablet', 'Syrup', 'Powder', 'Salve']
   const FamMember = ['Me', 'Dad', 'Mom']
+  const dispatch = useDispatch()
 
-  const [medName, setMedName] = useState('')
-  const [medType, setMedType] = useState('')
-  const [famMember, setFamMember] = useState('')
+  const [medName, setMedName] = useState(null)
+  const [medType, setMedType] = useState(null)
+  const [famMember, setFamMember] = useState(null)
   const [imageSource, setImageSource] = useState(null);
   const [isUpload, setIsUpload] = useState(false);
 
@@ -24,67 +27,89 @@ export const Stage1 = ({nextStage}) => {
     }
   }
 
-  const toggleSwitch = () => setIsUpload(previousState => !previousState)
+  const toggleSwitch = () => setIsUpload(previousState => !previousState);
+
+  const handleSubmit = () => {
+    if (medName && medType && famMember) {
+      nextStage()
+      dispatch(setMedicineDetails({
+        medName: medName,
+        medType: medType,
+        person: famMember,
+        image: imageSource,
+        upload: isUpload
+      }))
+    } else {
+      Alert.alert('Alert!', 'Enter all the fields', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK'},
+      ])
+    }
+  }
 
   return (
-    <View style={{flex:1}}>
+    <View style={{ flex: 1 }}>
       <ScrollView>
-      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
-        <Text style={styles.formTxt}>Medication Name</Text>
-        <View style={styles.inputContainer}>
-          <TextInput placeholder="Search med/Enter manually"
-            onChangeText={text => setMedName(text)}
-            value={medName} />
-          <Image source={require('../assets/search.png')} />
+        <View style={{ paddingTop: 10, paddingBottom: 20, flex: 1 }}>
+          <Text style={styles.formTxt}>Medication Name</Text>
+          <View style={styles.inputContainer}>
+            <TextInput placeholder="Search med/Enter manually"
+              onChangeText={text => setMedName(text)}
+              value={medName} 
+              style={{flex:1}} />
+            <Image source={require('../assets/search.png')} />
+          </View>
         </View>
-      </View>
-      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
-        <Text style={styles.formTxt}>Med Type</Text>
-        <FlatList
-          horizontal={true}
-          data={medTypeArr}
-          renderItem={({ item }) =>
-            <TouchableOpacity onPress={() => setMedType(item)}>
-              <Text style={[styles.medType, medType === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
-            </TouchableOpacity>
-          }
-        />
-      </View>
-      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
-        <Text style={styles.formTxt}>Select Family Member</Text>
-        <FlatList
-          horizontal={true}
-          data={FamMember}
-          renderItem={({ item }) =>
-            <TouchableOpacity onPress={() => setFamMember(item)}>
-              <Text style={[styles.medType, famMember === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
-            </TouchableOpacity>
-          }
-        />
-      </View>
-      <View style={{ paddingTop: 10, paddingBottom: 20, flex:1 }}>
-        <Text style={styles.formTxt}>Upload Image</Text>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          {imageSource &&
-            <View style={styles.uploadImage}>
-              <Image source={{ uri: imageSource }} style={styles.image} />
-            </View>}
-          <TouchableOpacity style={styles.uploadImage} onPress={() => handleImage()}>
-            <Image source={require('../assets/camera.png')} />
-          </TouchableOpacity>
+        <View style={{ paddingTop: 10, paddingBottom: 20, flex: 1 }}>
+          <Text style={styles.formTxt}>Med Type</Text>
+          <FlatList
+            horizontal={true}
+            data={medTypeArr}
+            renderItem={({ item }) =>
+              <TouchableOpacity onPress={() => setMedType(item)}>
+                <Text style={[styles.medType, medType === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
+              </TouchableOpacity>
+            }
+          />
         </View>
-      </View>
-      <View style={{ paddingBottom: 20, flexDirection: 'row', flex:1, alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text style={{ fontWeight: '500', color: '#333333' }}>Do you want to use uploaded image?</Text>
-        <Switch
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={isUpload ? '#1F848A' : '#f4f3f4'}
-          ios_backgroundColor="#3e3e3e"
-          onValueChange={toggleSwitch}
-          value={isUpload}
-        />
-      </View>
+        <View style={{ paddingTop: 10, paddingBottom: 20, flex: 1 }}>
+          <Text style={styles.formTxt}>Select Family Member</Text>
+          <FlatList
+            horizontal={true}
+            data={FamMember}
+            renderItem={({ item }) =>
+              <TouchableOpacity onPress={() => setFamMember(item)}>
+                <Text style={[styles.medType, famMember === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
+              </TouchableOpacity>
+            }
+          />
+        </View>
+        <View style={{ paddingTop: 10, paddingBottom: 20, flex: 1 }}>
+          <Text style={styles.formTxt}>Upload Image</Text>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {imageSource &&
+              <View style={styles.uploadImage}>
+                <Image source={{ uri: imageSource }} style={styles.image} />
+              </View>}
+            <TouchableOpacity style={styles.uploadImage} onPress={() => handleImage()}>
+              <Image source={require('../assets/camera.png')} />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={{ paddingBottom: 20, flexDirection: 'row', flex: 1, alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={{ fontWeight: '500', color: '#333333' }}>Do you want to use uploaded image?</Text>
+          <Switch
+            trackColor={{ false: '#767577', true: '#C4C4C4' }}
+            thumbColor={isUpload ? '#1F848A' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isUpload}
+          />
+        </View>
       </ScrollView>
+      <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
+        <Text style={styles.nextBtnTxt}>Next</Text>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -131,5 +156,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 10,
+  },
+  nextBtn: {
+    backgroundColor: '#1F848A',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  nextBtnTxt: {
+    color: 'white',
+    fontWeight: '500'
   }
 })
