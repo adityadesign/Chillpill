@@ -13,7 +13,7 @@ export const StageSuccess = () => {
       <Image style={{ alignSelf: 'center', marginVertical: 20 }} source={require('../assets/abstract2.png')} />
       {data && <View>
         <View>
-          <Text>{}</Text>
+          <Text>{data.medicineDetails.medName}</Text>
         </View>
       </View>}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>

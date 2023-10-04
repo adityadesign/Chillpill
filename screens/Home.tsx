@@ -1,26 +1,27 @@
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image, ScrollView } from 'react-native'
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image, ScrollView, ActivityIndicator } from 'react-native'
 import { addDays, eachDayOfInterval, eachWeekOfInterval, format, subDays } from 'date-fns'
 import PagerView from 'react-native-pager-view'
 import { useEffect, useState } from 'react'
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, collection, getDoc } from "firebase/firestore";
 import { FIREBASE_DB } from '../firebase/Firebase.config';
 
 export const Home = ({ navigation, route }) => {
   const [dbData, setDbData] = useState([])
-  const [isTake, setIsTake] = useState(false)
-  const [isSkip, setIsSkip] = useState(false)
+  const [loading, setLoading] = useState(false)
   const today = new Date()
   const uid = route.params?.uid
   const [selectedDay, setSelectedDay] = useState(today)
+  const medicineRef = doc(FIREBASE_DB, 'users', `${uid}`)
 
   useEffect(() => {
-    getData()
-  }, [dbData])
-
-  const getData = async () => {
-    const querySnapshot = await getDoc(doc(FIREBASE_DB, "users", `${uid}`));
-    setDbData(querySnapshot.data()?.medicines)
-  }
+    const unsub = onSnapshot(medicineRef, (docSnapshot) => {
+      setDbData(docSnapshot.data().medicines)
+      setLoading(true)
+    });
+    return () => {
+      unsub(); // Invoke unsubscribe when the component unmounts
+    };
+  }, [uid])
 
   const dates = eachWeekOfInterval({
     start: subDays(today, 14),
@@ -34,6 +35,21 @@ export const Home = ({ navigation, route }) => {
       acc.push(allDays)
       return acc
     }, [])
+
+  const handleTakeSkip = async (Id: string, action: string) => {
+    if (action === 'take') {
+      dbData.find((doc) => doc.id === Id).isTaken = true
+      dbData.find((doc) => doc.id === Id).statusTakenDate.push(selectedDay.toDateString())
+    }
+    else if (action === 'skip') {
+      dbData.find((doc) => doc.id === Id).isSkipped = true
+      dbData.find((doc) => doc.id === Id).statusSkippedDate.push(selectedDay.toDateString())
+    }
+    await updateDoc(medicineRef, {
+      medicines: dbData
+    })
+    console.log(dbData);
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -70,65 +86,84 @@ export const Home = ({ navigation, route }) => {
         })}
       </PagerView>
       <View style={{ flex: 4, marginTop: 10 }}>
-        <ScrollView>
-          {dbData.length === 0 &&
-            <View style={styles.midContainer}>
-              <Image source={require('../assets/abstract.png')} />
-              <Text style={{ fontWeight: '600' }}>Hey! No meds are added to be reminded!</Text>
-              <TouchableOpacity style={styles.remainderBtn}>
-                <Text style={styles.remainderBtnText}>+ Add a Reminder</Text>
-              </TouchableOpacity>
-            </View>
-          }
-          {dbData.length > 0 &&
-            dbData.map((item, index) => {
-              const imageSource = item.image
-              return (
-                <View style={styles.dataContainer} key={index}>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 1, alignItems: 'flex-start', gap: 10 }}>
-                      <Text style={styles.userData}>{item.person}</Text>
-                      <Image source={{ uri: imageSource }} style={styles.image} />
-                    </View>
-                    <View style={{ flex: 3, justifyContent: 'space-around' }}>
-                      <Text style={{ color: '#666666', fontWeight: '500' }}>{item.medName}</Text>
-                      <Text style={{ fontWeight: '700', fontSize: 24 }}>{item.time}</Text>
-                      <View style={{ flexDirection: 'row', gap: 15 }}>
-                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.dose} {item.medType}</Text>
-                        <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.beforeFood ? 'Before breakfast' : 'After breakfast'}</Text>
-                      </View>
-                    </View>
+        {loading ?
+          <ScrollView>
+            {!dbData?.length &&
+              <View style={styles.midContainer}>
+                <Image source={require('../assets/abstract.png')} />
+                <Text style={{ fontWeight: '600' }}>Hey! No meds are added to be reminded!</Text>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('AddMedicineForm', { uid: uid })}
+                  style={styles.remainderBtn}>
+                  <Text style={styles.remainderBtnText}>+ Add a Reminder</Text>
+                </TouchableOpacity>
+              </View>
+            }
+            {dbData?.length > 0 &&
+              dbData.map((item, index) => {
+                const imageSource = item.image
+                const startDate = new Date(item.fromDate)
+                const endDate = new Date(item.toDate)
+
+                return (
+                  <View key={index}>
+                    {selectedDay >= startDate && selectedDay <= endDate &&
+                      <View style={styles.dataContainer}>
+                        <View style={{ flexDirection: 'row' }}>
+                          <View style={{ flex: 1, alignItems: 'flex-start', gap: 10 }}>
+                            <Text style={styles.userData}>{item.person}</Text>
+                            <Image source={{ uri: imageSource }} style={styles.image} />
+                          </View>
+                          <View style={{ flex: 3, justifyContent: 'space-around' }}>
+                            <Text style={{ color: '#666666', fontWeight: '500' }}>{item.medName}</Text>
+                            <Text style={{ fontWeight: '700', fontSize: 24 }}>{item.time}</Text>
+                            <View style={{ flexDirection: 'row', gap: 15 }}>
+                              <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.dose} {item.medType}</Text>
+                              <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.beforeFood ? 'Before breakfast' : 'After breakfast'}</Text>
+                            </View>
+                          </View>
+                        </View>
+                        {item.isTaken && item.statusTakenDate.includes(selectedDay.toDateString()) &&
+                          <View style={styles.medicineStatus}>
+                            <Image source={require('../assets/take.png')} />
+                            <Text style={{ color: '#1F848A', fontWeight: '500' }}>Taken</Text>
+                          </View>
+                        }
+                        {item.isSkipped && item.statusSkippedDate.includes(selectedDay.toDateString()) &&
+                          <View style={styles.medicineStatus}>
+                            <Image source={require('../assets/skip.png')} />
+                            <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skipped</Text>
+                          </View>
+                        }
+                        {!item.statusTakenDate.includes(selectedDay.toDateString()) && !item.statusSkippedDate.includes(selectedDay.toDateString()) && selectedDay === today &&
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                            <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'skip')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                              <Image source={require('../assets/skip.png')} />
+                              <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skip</Text>
+                            </TouchableOpacity>
+                            <View style={{ borderWidth: 0.6, borderColor: '#E9E9E9' }}></View>
+                            <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'take')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                              <Image source={require('../assets/take.png')} />
+                              <Text style={{ color: '#1F848A', fontWeight: '500' }}>Take</Text>
+                            </TouchableOpacity>
+                          </View>
+                        }
+                        {selectedDay !== today &&
+                          <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
+                            <Image source={require('../assets/upcoming.png')} />
+                            <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
+                          </View>
+                        }
+                      </View>}
                   </View>
-                  {isTake &&
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, position: 'absolute', right: 20, top: 20 }}>
-                      <Image source={require('../assets/take.png')} />
-                      <Text style={{ color: '#1F848A', fontWeight: '500' }}>Taken</Text>
-                    </View>
-                  }
-                  {isSkip &&
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, position: 'absolute', right: 20, top: 20 }}>
-                      <Image source={require('../assets/skip.png')} />
-                      <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skipped</Text>
-                    </View>
-                  }
-                  {!isSkip && !isTake &&
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-                      <TouchableOpacity onPress={() => setIsSkip(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                        <Image source={require('../assets/skip.png')} />
-                        <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skip</Text>
-                      </TouchableOpacity>
-                      <View style={{ borderWidth: 0.6, borderColor: '#E9E9E9' }}></View>
-                      <TouchableOpacity onPress={() => setIsTake(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                        <Image source={require('../assets/take.png')} />
-                        <Text style={{ color: '#1F848A', fontWeight: '500' }}>Take</Text>
-                      </TouchableOpacity>
-                    </View>
-                  }
-                </View>
-              )
-            })
-          }
-        </ScrollView>
+                )
+              })
+            }
+          </ScrollView> :
+          <ActivityIndicator
+            color="#1F848A"
+            size={50} />
+        }
       </View>
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.bottomContainerElement}>
@@ -231,6 +266,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     rowGap: 20,
+    marginVertical: 5
   },
   dataContainer: {
     backgroundColor: 'white',
@@ -284,5 +320,14 @@ const styles = StyleSheet.create({
     width: 58,
     backgroundColor: '#E9E9E9',
     borderRadius: 5
+  },
+  medicineStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    position: 'absolute',
+    right: 20,
+    top: 20
   }
+
 })

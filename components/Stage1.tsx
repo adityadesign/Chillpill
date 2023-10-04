@@ -3,6 +3,8 @@ import { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import { useDispatch } from 'react-redux';
 import { setMedicineDetails } from '../features/userMedSlice'
+import { v4 as uuidv4 } from 'uuid';
+import 'react-native-get-random-values';
 
 export const Stage1 = ({ nextStage }) => {
   const medTypeArr = ['Tablet', 'Syrup', 'Powder', 'Salve']
@@ -33,11 +35,16 @@ export const Stage1 = ({ nextStage }) => {
     if (medName && medType && famMember) {
       nextStage()
       dispatch(setMedicineDetails({
+        id: uuidv4(),
         medName: medName,
         medType: medType,
         person: famMember,
         image: imageSource,
-        upload: isUpload
+        upload: isUpload,
+        isTaken: false,
+        isSkipped: false,
+        statusTakenDate: [],
+        statusSkippedDate: []
       }))
     } else {
       Alert.alert('Alert!', 'Enter all the fields', [

@@ -36,7 +36,7 @@ export const LoginRegister = ({ navigation }) => {
         await setDoc(doc(FIREBASE_DB, "users", `${response.user.uid}`), {
           medicines: []
         });
-        console.log(response)
+        navigation.navigate('Home', {uid: `${response.user.uid}`})
       } catch (err) {
         console.log(err)
         setError(true)
@@ -118,7 +118,7 @@ export const LoginRegister = ({ navigation }) => {
           />
         ) :
           <TouchableOpacity style={styles.submitBtn} onPress={() => toggleBtn ? signIn() : signUp()}>
-            <Text style={styles.submitBtnText}>{!toggleRegister ? 'Login' : 'Register'}</Text>
+            <Text style={styles.submitBtnText}>{!toggleRegister ? 'Login' : 'Register & Login'}</Text>
           </TouchableOpacity>
         }
       </KeyboardAvoidingView>

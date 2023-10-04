@@ -31,7 +31,7 @@ export const Stage2 = ({ nextStage }) => {
     setModalVisible(false)
   }
 
-  const handleSubmit =()=>{
+  const handleSubmit = () => {
     nextStage()
     dispatch(setMedicineDetails({
       fromDate: selectedFrom,
@@ -87,11 +87,12 @@ export const Stage2 = ({ nextStage }) => {
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 style={styles.modalBtn}>
-                <Text style={{ color: '#1F848A', fontWeight: '500', fontSize: 13 }}>Cancel</Text>
+                <Text style={[styles.applyTxt,{color: '#1F848A'}]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                onPress={() => handleApply()}
                 style={[styles.modalBtn, { backgroundColor: '#1F848A' }]}>
-                <Text onPress={() => handleApply()} style={{ color: 'white', fontWeight: '500', fontSize: 13 }}>Apply</Text>
+                <Text style={styles.applyTxt}>Apply</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -160,5 +161,10 @@ const styles = StyleSheet.create({
   nextBtnTxt: {
     color: 'white',
     fontWeight: '500'
+  },
+  applyTxt: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 13
   }
 })

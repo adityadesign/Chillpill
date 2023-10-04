@@ -25,11 +25,10 @@ export const AddMedicineForm = ({ navigation, route }) => {
       setStage(prev => prev + 1)
     }
     else if (stage === 4) {
-      navigation.navigate('Home', { uid: `${route.params?.uid}` })
-
       await updateDoc(medicineRef, {
         medicines: arrayUnion({ ...data })
       });
+      navigation.navigate('Home', { uid: `${route.params?.uid}` })
     }
   }
 
