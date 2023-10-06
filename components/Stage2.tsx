@@ -1,9 +1,10 @@
 import { Calendar } from 'react-native-calendars';
-import { View, Text, FlatList, Modal, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native'
+import { View, Text, FlatList, Modal, TouchableOpacity, StyleSheet, Image, ScrollView, Alert } from 'react-native'
 import { CalenderInput } from '../utils/CalenderInput';
 import { useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { setMedicineDetails } from '../features/userMedSlice';
+import { format } from 'date-fns';
 
 export const Stage2 = ({ nextStage }) => {
 
@@ -13,9 +14,9 @@ export const Stage2 = ({ nextStage }) => {
   const [tempDate, setTempDate] = useState('')
   const dispatch = useDispatch()
 
-  const [selectedFrom, setSelectedFrom] = useState('')
-  const [selectedTo, setSelectedTo] = useState('')
-  const [time, setTime] = useState('')
+  const [selectedFrom, setSelectedFrom] = useState(null)
+  const [selectedTo, setSelectedTo] = useState(null)
+  const [time, setTime] = useState(null)
 
   const toggleModal = (text: string) => {
     setModalTxt(text)
@@ -32,12 +33,19 @@ export const Stage2 = ({ nextStage }) => {
   }
 
   const handleSubmit = () => {
-    nextStage()
-    dispatch(setMedicineDetails({
-      fromDate: selectedFrom,
-      toDate: selectedTo,
-      time: time
-    }))
+    if (selectedFrom && selectedTo && time) {
+      nextStage()
+      dispatch(setMedicineDetails({
+        fromDate: selectedFrom,
+        toDate: selectedTo,
+        time: time
+      }))
+    } else {
+      Alert.alert('Alert!', 'Enter all the fields', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK'},
+      ])
+    }
   }
 
   return (
@@ -78,8 +86,10 @@ export const Stage2 = ({ nextStage }) => {
             </View>
             <Calendar
               onDayPress={day => {
-                if (modalTxt === 'From') setTempDate(day.dateString)
-                else if (modalTxt === 'To') setTempDate(day.dateString)
+                const dateObject = new Date(day.dateString)
+                const formattedDate = format(dateObject, "yyyy-MM-dd")
+                if (modalTxt === 'From') setTempDate(formattedDate)
+                else if (modalTxt === 'To') setTempDate(formattedDate)
               }}
               markedDates={{ [tempDate]: { selected: true, disableTouchEvent: true, } }}
             />
@@ -87,7 +97,7 @@ export const Stage2 = ({ nextStage }) => {
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
                 style={styles.modalBtn}>
-                <Text style={[styles.applyTxt,{color: '#1F848A'}]}>Cancel</Text>
+                <Text style={[styles.applyTxt, { color: '#1F848A' }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleApply()}

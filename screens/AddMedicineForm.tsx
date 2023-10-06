@@ -13,11 +13,11 @@ import type { details } from '../features/userMedSlice'
 export const AddMedicineForm = ({ navigation, route }) => {
   const [stage, setStage] = useState(1)
   const data: details = useSelector((state: RootState) => state.medicines.medicineDetails)
-  const medicineRef = doc(FIREBASE_DB, "users", `${route.params?.uid}`)
+  const medicineRef = doc(FIREBASE_DB, "users", `${route.params.uid}`)
 
   const handleBack = () => {
     setStage(prev => prev - 1)
-    if (stage === 1) navigation.navigate("Home")
+    if (stage === 1) navigation.navigate("Home", { uid: `${route.params?.uid}` })
   }
 
   const handleSubmit = async () => {

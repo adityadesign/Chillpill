@@ -1,18 +1,28 @@
 import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image, ScrollView, ActivityIndicator } from 'react-native'
-import { addDays, eachDayOfInterval, eachWeekOfInterval, format, subDays } from 'date-fns'
+import { addDays, eachDayOfInterval, eachWeekOfInterval, format, getDate, parse, parseISO, subDays } from 'date-fns'
 import PagerView from 'react-native-pager-view'
 import { useEffect, useState } from 'react'
-import { doc, onSnapshot, updateDoc, collection, getDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, } from "firebase/firestore";
 import { FIREBASE_DB } from '../firebase/Firebase.config';
 
 export const Home = ({ navigation, route }) => {
+  const uid = route.params?.uid
+  const medicineRef = doc(FIREBASE_DB, 'users', `${uid}`)
   const [dbData, setDbData] = useState([])
   const [loading, setLoading] = useState(false)
-  const today = new Date()
-  const uid = route.params?.uid
-  const [selectedDay, setSelectedDay] = useState(today)
-  const medicineRef = doc(FIREBASE_DB, 'users', `${uid}`)
 
+  //Time format in IST
+  const today = new Date()
+  const options = {
+    timeZone: 'Asia/Kolkata', // Set the timezone to IST
+  };
+  const temp = new Date().toLocaleString('en-GB', options);
+  const parsedDate = parse(temp, 'dd/MM/yyyy, HH:mm:ss', new Date())
+  const todayIST = format(parsedDate, 'yyyy-MM-dd\'T\'HH:mm:ss')
+  const todayDate = format(parsedDate, 'yyyy-MM-dd')
+  const [selectedDay, setSelectedDay] = useState(todayDate)
+  console.log(selectedDay, todayIST);
+  
   useEffect(() => {
     const unsub = onSnapshot(medicineRef, (docSnapshot) => {
       setDbData(docSnapshot.data().medicines)
@@ -39,11 +49,11 @@ export const Home = ({ navigation, route }) => {
   const handleTakeSkip = async (Id: string, action: string) => {
     if (action === 'take') {
       dbData.find((doc) => doc.id === Id).isTaken = true
-      dbData.find((doc) => doc.id === Id).statusTakenDate.push(selectedDay.toDateString())
+      dbData.find((doc) => doc.id === Id).statusTakenDate.push(selectedDay)
     }
     else if (action === 'skip') {
       dbData.find((doc) => doc.id === Id).isSkipped = true
-      dbData.find((doc) => doc.id === Id).statusSkippedDate.push(selectedDay.toDateString())
+      dbData.find((doc) => doc.id === Id).statusSkippedDate.push(selectedDay)
     }
     await updateDoc(medicineRef, {
       medicines: dbData
@@ -70,10 +80,12 @@ export const Home = ({ navigation, route }) => {
                 {week.map((day, index) => {
                   const dayTxt = format(day, 'EEE')
                   const dateTxt = format(day, 'd')
-                  const selectedTxt = format(selectedDay, 'd')
+                  const selectedTxt = getDate(parseISO(selectedDay)).toString()
+                  const formattedDateStr = format(new Date(day), "yyyy-MM-dd");
+                  
                   return (
                     <View key={index}>
-                      <TouchableOpacity style={styles.rowElement} onPress={() => setSelectedDay(day)}>
+                      <TouchableOpacity style={styles.rowElement} onPress={()=>setSelectedDay(formattedDateStr)}>
                         <Text style={[styles.dayTxt, selectedTxt === dateTxt && styles.activeDay]}>{dayTxt}</Text>
                         <Text style={[styles.dateTxt, selectedTxt === dateTxt && styles.activeDate]}>{dateTxt}</Text>
                       </TouchableOpacity>
@@ -102,8 +114,8 @@ export const Home = ({ navigation, route }) => {
             {dbData?.length > 0 &&
               dbData.map((item, index) => {
                 const imageSource = item.image
-                const startDate = new Date(item.fromDate)
-                const endDate = new Date(item.toDate)
+                const startDate = item.fromDate
+                const endDate = item.toDate
 
                 return (
                   <View key={index}>
@@ -123,19 +135,19 @@ export const Home = ({ navigation, route }) => {
                             </View>
                           </View>
                         </View>
-                        {item.isTaken && item.statusTakenDate.includes(selectedDay.toDateString()) &&
+                        {item.isTaken && item.statusTakenDate.includes(selectedDay) &&
                           <View style={styles.medicineStatus}>
                             <Image source={require('../assets/take.png')} />
                             <Text style={{ color: '#1F848A', fontWeight: '500' }}>Taken</Text>
                           </View>
                         }
-                        {item.isSkipped && item.statusSkippedDate.includes(selectedDay.toDateString()) &&
+                        {item.isSkipped && item.statusSkippedDate.includes(selectedDay) &&
                           <View style={styles.medicineStatus}>
                             <Image source={require('../assets/skip.png')} />
                             <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skipped</Text>
                           </View>
                         }
-                        {!item.statusTakenDate.includes(selectedDay.toDateString()) && !item.statusSkippedDate.includes(selectedDay.toDateString()) && selectedDay === today &&
+                        {!item.statusTakenDate.includes(selectedDay) && !item.statusSkippedDate.includes(selectedDay) && selectedDay === todayDate &&
                           <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                             <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'skip')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                               <Image source={require('../assets/skip.png')} />
@@ -148,7 +160,7 @@ export const Home = ({ navigation, route }) => {
                             </TouchableOpacity>
                           </View>
                         }
-                        {selectedDay !== today &&
+                        {selectedDay !== todayDate &&
                           <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
                             <Image source={require('../assets/upcoming.png')} />
                             <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
@@ -177,7 +189,7 @@ export const Home = ({ navigation, route }) => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomContainerElement}>
           <Image source={require('../assets/calender.png')} />
-          <Text style={styles.bottomContainerElementTxt}>Appointments </Text>
+          <Text style={styles.bottomContainerElementTxt}>Appointments</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
