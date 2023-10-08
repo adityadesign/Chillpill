@@ -22,7 +22,7 @@ export const Home = ({ navigation, route }) => {
   const todayDate = format(parsedDate, 'yyyy-MM-dd')
   const [selectedDay, setSelectedDay] = useState(todayDate)
   console.log(selectedDay, todayIST);
-  
+
   useEffect(() => {
     const unsub = onSnapshot(medicineRef, (docSnapshot) => {
       setDbData(docSnapshot.data().medicines)
@@ -82,10 +82,10 @@ export const Home = ({ navigation, route }) => {
                   const dateTxt = format(day, 'd')
                   const selectedTxt = getDate(parseISO(selectedDay)).toString()
                   const formattedDateStr = format(new Date(day), "yyyy-MM-dd");
-                  
+
                   return (
                     <View key={index}>
-                      <TouchableOpacity style={styles.rowElement} onPress={()=>setSelectedDay(formattedDateStr)}>
+                      <TouchableOpacity style={styles.rowElement} onPress={() => setSelectedDay(formattedDateStr)}>
                         <Text style={[styles.dayTxt, selectedTxt === dateTxt && styles.activeDay]}>{dayTxt}</Text>
                         <Text style={[styles.dateTxt, selectedTxt === dateTxt && styles.activeDate]}>{dateTxt}</Text>
                       </TouchableOpacity>
@@ -183,8 +183,7 @@ export const Home = ({ navigation, route }) => {
           <Text style={styles.bottomContainerElementTxt}>Tracker</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomContainerElement} onPress={() => navigation.navigate('AddMedicineForm', { uid: uid })}>
-          <Image style={{ position: 'relative' }} source={require('../assets/addBack.png')} />
-          <Image style={{ position: 'absolute', top: 4 }} source={require('../assets/add.png')} />
+          <Image style={{ height: 25, width: 25 }} source={require('../assets/add.png')} />
           <Text style={styles.bottomContainerElementTxt}>Add Medicine</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomContainerElement}>

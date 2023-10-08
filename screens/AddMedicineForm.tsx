@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, ScrollView } from "react-native"
+import { useState } from "react";
+import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native"
 import { Stage1 } from "../components/Stage1";
 import { Stage2 } from "../components/Stage2";
 import { Stage3 } from "../components/Stage3";
 import { StageSuccess } from "../components/StageSuccess";
-import { arrayUnion, doc, updateDoc, getDoc } from "firebase/firestore";
+import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../firebase/Firebase.config";
 import { useSelector } from 'react-redux'
 import type { RootState } from '../src/store'
@@ -14,6 +14,7 @@ export const AddMedicineForm = ({ navigation, route }) => {
   const [stage, setStage] = useState(1)
   const data: details = useSelector((state: RootState) => state.medicines.medicineDetails)
   const medicineRef = doc(FIREBASE_DB, "users", `${route.params.uid}`)
+  const [loading, setLoading] = useState(false)
 
   const handleBack = () => {
     setStage(prev => prev - 1)
@@ -21,6 +22,7 @@ export const AddMedicineForm = ({ navigation, route }) => {
   }
 
   const handleSubmit = async () => {
+    setLoading(true)
     if (stage < 4) {
       setStage(prev => prev + 1)
     }
@@ -28,6 +30,7 @@ export const AddMedicineForm = ({ navigation, route }) => {
       await updateDoc(medicineRef, {
         medicines: arrayUnion({ ...data })
       });
+      setLoading(false)
       navigation.navigate('Home', { uid: `${route.params?.uid}` })
     }
   }
@@ -65,9 +68,14 @@ export const AddMedicineForm = ({ navigation, route }) => {
         {stage === 3 && <Stage3 nextStage={() => setStage(prev => prev + 1)} />}
         {stage === 4 && <StageSuccess />}
       </View>
-      {stage === 4 && <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
-        <Text style={styles.nextBtnTxt}>Finish</Text>
-      </TouchableOpacity>}
+      {stage === 4 &&
+        (!loading ?
+          <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
+            <Text style={styles.nextBtnTxt}>Finish</Text>
+          </TouchableOpacity> :
+          <ActivityIndicator color="#1F848A" size={50} />
+        )
+      }
     </SafeAreaView>
   )
 }

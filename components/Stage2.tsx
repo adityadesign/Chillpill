@@ -5,11 +5,13 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { setMedicineDetails } from '../features/userMedSlice';
 import { format } from 'date-fns';
+import RNDateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 export const Stage2 = ({ nextStage }) => {
 
-  const defaultTime = ['08:00 AM', '10:00 AM', '12:00 PM', '02:00 PM', '06:00 PM', '09:00 PM']
+  const defaultTime = ['8:00 AM', '10:00 AM', '12:00 PM', '2:00 PM', '6:00 PM', '9:00 PM']
   const [modalVisible, setModalVisible] = useState(false)
+  const [showTimePicker, setShowTimePicker] = useState(false)
   const [modalTxt, setModalTxt] = useState('')
   const [tempDate, setTempDate] = useState('')
   const dispatch = useDispatch()
@@ -22,6 +24,26 @@ export const Stage2 = ({ nextStage }) => {
     setModalTxt(text)
     setModalVisible(true)
   }
+
+  // const onChange = (event, selectedTime) => {
+  //   const currentTime = selectedTime || time;
+  //   setShowTimePicker(false);
+  //   setTime(currentTime);
+  // };
+
+  const onChange = (event: DateTimePickerEvent) => {
+    setShowTimePicker(false)
+    const {
+      type,
+      nativeEvent: { timestamp },
+    } = event
+    const temp = new Date(event.nativeEvent.timestamp)
+    const hours = temp.getHours()
+    const minutes = temp.getMinutes().toString().padStart(2, '0')
+    const period = hours >= 12 ? 'PM' : 'AM'
+    const formattedHours = hours % 12 || 12;
+    setTime(`${formattedHours}:${minutes} ${period}`)
+  };
 
   const handleApply = () => {
     if (modalTxt === 'From') {
@@ -43,7 +65,7 @@ export const Stage2 = ({ nextStage }) => {
     } else {
       Alert.alert('Alert!', 'Enter all the fields', [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'OK'},
+        { text: 'OK' },
       ])
     }
   }
@@ -56,19 +78,22 @@ export const Stage2 = ({ nextStage }) => {
           <CalenderInput props={'To'} selected={selectedTo} toggleModal={() => toggleModal('To')} />
         </View>
         <View>
-          <Text style={styles.txt}>Select Time</Text>
-          <View>
-            <FlatList
-              showsHorizontalScrollIndicator={false}
-              horizontal={true}
-              data={defaultTime}
-              renderItem={({ item }) =>
-                <TouchableOpacity onPress={() => setTime(item)}>
-                  <Text style={[styles.time, time === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
-                </TouchableOpacity>
-              }
-            />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={styles.txt}>Select Time</Text>
+            <TouchableOpacity onPress={() => setShowTimePicker(true)}>
+              <Image source={require('../assets/add.png')} />
+            </TouchableOpacity>
           </View>
+          <FlatList
+            showsHorizontalScrollIndicator={false}
+            horizontal={true}
+            data={defaultTime}
+            renderItem={({ item }) =>
+              <TouchableOpacity onPress={() => setTime(item)}>
+                <Text style={[styles.time, time === item && { backgroundColor: '#1F848A', color: 'white' }]}>{item}</Text>
+              </TouchableOpacity>
+            }
+          />
         </View>
       </ScrollView>
       <Modal
@@ -111,6 +136,15 @@ export const Stage2 = ({ nextStage }) => {
       <TouchableOpacity style={styles.nextBtn} onPress={() => handleSubmit()}>
         <Text style={styles.nextBtnTxt}>Next</Text>
       </TouchableOpacity>
+      {showTimePicker && (
+        <RNDateTimePicker
+          value={new Date()}
+          mode="time"
+          is24Hour={false}
+          display="spinner"
+          onChange={onChange}
+        />
+      )}
     </View>
   )
 }
@@ -120,7 +154,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 10,
-    marginBottom: 30
+    marginBottom: 50
   },
   txt: {
     color: '#333333',
@@ -129,7 +163,7 @@ const styles = StyleSheet.create({
   time: {
     backgroundColor: '#F0F0F0',
     height: 40,
-    width: 78,
+    width: 90,
     textAlign: 'center',
     textAlignVertical: 'center',
     borderRadius: 10,
