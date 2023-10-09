@@ -19,17 +19,12 @@ export const Stage2 = ({ nextStage }) => {
   const [selectedFrom, setSelectedFrom] = useState(null)
   const [selectedTo, setSelectedTo] = useState(null)
   const [time, setTime] = useState(null)
+  const [dateTimeIST, setDateTimeIST] = useState(null)
 
   const toggleModal = (text: string) => {
     setModalTxt(text)
     setModalVisible(true)
   }
-
-  // const onChange = (event, selectedTime) => {
-  //   const currentTime = selectedTime || time;
-  //   setShowTimePicker(false);
-  //   setTime(currentTime);
-  // };
 
   const onChange = (event: DateTimePickerEvent) => {
     setShowTimePicker(false)
@@ -43,8 +38,9 @@ export const Stage2 = ({ nextStage }) => {
     const period = hours >= 12 ? 'PM' : 'AM'
     const formattedHours = hours % 12 || 12;
     setTime(`${formattedHours}:${minutes} ${period}`)
+    setDateTimeIST(temp.toString())    
   };
-
+  
   const handleApply = () => {
     if (modalTxt === 'From') {
       setSelectedFrom(tempDate)
@@ -60,7 +56,8 @@ export const Stage2 = ({ nextStage }) => {
       dispatch(setMedicineDetails({
         fromDate: selectedFrom,
         toDate: selectedTo,
-        time: time
+        time: time,
+        dateTimeIST: dateTimeIST
       }))
     } else {
       Alert.alert('Alert!', 'Enter all the fields', [

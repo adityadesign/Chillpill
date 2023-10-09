@@ -1,15 +1,31 @@
 import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Image, ScrollView, ActivityIndicator } from 'react-native'
 import { addDays, eachDayOfInterval, eachWeekOfInterval, format, getDate, parse, parseISO, subDays } from 'date-fns'
 import PagerView from 'react-native-pager-view'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { doc, onSnapshot, updateDoc, } from "firebase/firestore";
 import { FIREBASE_DB } from '../firebase/Firebase.config';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export const Home = ({ navigation, route }) => {
   const uid = route.params?.uid
   const medicineRef = doc(FIREBASE_DB, 'users', `${uid}`)
   const [dbData, setDbData] = useState([])
   const [loading, setLoading] = useState(false)
+
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
   //Time format in IST
   const today = new Date()
@@ -21,7 +37,6 @@ export const Home = ({ navigation, route }) => {
   const todayIST = format(parsedDate, 'yyyy-MM-dd\'T\'HH:mm:ss')
   const todayDate = format(parsedDate, 'yyyy-MM-dd')
   const [selectedDay, setSelectedDay] = useState(todayDate)
-  console.log(selectedDay, todayIST);
 
   useEffect(() => {
     const unsub = onSnapshot(medicineRef, (docSnapshot) => {
@@ -58,7 +73,6 @@ export const Home = ({ navigation, route }) => {
     await updateDoc(medicineRef, {
       medicines: dbData
     })
-    console.log(dbData);
   }
 
   return (
@@ -79,13 +93,19 @@ export const Home = ({ navigation, route }) => {
               <View style={styles.row}>
                 {week.map((day, index) => {
                   const dayTxt = format(day, 'EEE')
-                  const dateTxt = format(day, 'd')
-                  const selectedTxt = getDate(parseISO(selectedDay)).toString()
-                  const formattedDateStr = format(new Date(day), "yyyy-MM-dd");
+                  const dateTxt = parseInt(format(day, 'd'))
+                  const selectedTxt = getDate(parseISO(selectedDay))
+
+                  const handleDateSelect = () => {
+                    const tempDay = new Date(day).toLocaleString('en-GB', options)
+                    const parsedDate = parse(tempDay, 'dd/MM/yyyy, HH:mm:ss', new Date())
+                    const formattedDateStr = format(new Date(parsedDate), "yyyy-MM-dd")
+                    setSelectedDay(formattedDateStr)
+                  }
 
                   return (
                     <View key={index}>
-                      <TouchableOpacity style={styles.rowElement} onPress={() => setSelectedDay(formattedDateStr)}>
+                      <TouchableOpacity style={styles.rowElement} onPress={() => handleDateSelect()}>
                         <Text style={[styles.dayTxt, selectedTxt === dateTxt && styles.activeDay]}>{dayTxt}</Text>
                         <Text style={[styles.dateTxt, selectedTxt === dateTxt && styles.activeDate]}>{dateTxt}</Text>
                       </TouchableOpacity>
@@ -112,11 +132,21 @@ export const Home = ({ navigation, route }) => {
               </View>
             }
             {dbData?.length > 0 &&
-              dbData.map((item, index) => {
+              dbData.sort((a, b) => {
+                const dateA = new Date(a.dateTimeIST);
+                const dateB = new Date(b.dateTimeIST)
+                // Compare hours
+                const hoursDiff = dateA.getHours() - dateB.getHours()
+                // If hours are equal, compare minutes
+                if (hoursDiff === 0) {
+                  const minutesDiff = dateA.getMinutes() - dateB.getMinutes();
+                  return minutesDiff;
+                }
+                return hoursDiff;
+              }).map((item, index) => {
                 const imageSource = item.image
                 const startDate = item.fromDate
                 const endDate = item.toDate
-
                 return (
                   <View key={index}>
                     {selectedDay >= startDate && selectedDay <= endDate &&
@@ -135,19 +165,25 @@ export const Home = ({ navigation, route }) => {
                             </View>
                           </View>
                         </View>
+
                         {item.isTaken && item.statusTakenDate.includes(selectedDay) &&
                           <View style={styles.medicineStatus}>
                             <Image source={require('../assets/take.png')} />
                             <Text style={{ color: '#1F848A', fontWeight: '500' }}>Taken</Text>
                           </View>
                         }
+
                         {item.isSkipped && item.statusSkippedDate.includes(selectedDay) &&
                           <View style={styles.medicineStatus}>
                             <Image source={require('../assets/skip.png')} />
                             <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skipped</Text>
                           </View>
                         }
-                        {!item.statusTakenDate.includes(selectedDay) && !item.statusSkippedDate.includes(selectedDay) && selectedDay === todayDate &&
+
+                        {!item.statusTakenDate.includes(selectedDay) &&
+                          !item.statusSkippedDate.includes(selectedDay) &&
+                          (new Date(item?.dateTimeIST) <= new Date(todayIST)) &&
+                          (new Date(item?.dateTimeIST).toTimeString() < new Date(todayIST).toTimeString()) &&
                           <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                             <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'skip')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                               <Image source={require('../assets/skip.png')} />
@@ -160,7 +196,9 @@ export const Home = ({ navigation, route }) => {
                             </TouchableOpacity>
                           </View>
                         }
-                        {selectedDay !== todayDate &&
+
+                        {(new Date(item?.fromDate) < new Date(selectedDay)) &&
+                          (new Date(item?.dateTimeIST).toTimeString() > new Date(todayIST).toTimeString()) &&
                           <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
                             <Image source={require('../assets/upcoming.png')} />
                             <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>

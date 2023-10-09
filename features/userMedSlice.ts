@@ -12,7 +12,8 @@ export interface details {
   dose: string,
   numberOfPills: string,
   beforeFood: boolean,
-  notify: boolean
+  notify: boolean,
+  dateTimeIST: string | null
 }
 
 export interface CounterState {
@@ -32,7 +33,8 @@ const initialState: CounterState = {
     dose: '',
     numberOfPills: '',
     beforeFood: false,
-    notify: true
+    notify: true,
+    dateTimeIST: null
   },
 }
 
