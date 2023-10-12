@@ -1,3 +1,4 @@
+import registerNNPushToken from 'native-notify';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, Text, View, Image, StatusBar, TouchableOpacity, Button } from 'react-native';
@@ -7,9 +8,11 @@ import { AddMedicineForm } from './screens/AddMedicineForm';
 import { store } from './src/store'
 import { Provider } from 'react-redux'
 
+
 const Stack = createNativeStackNavigator();
 
 export default function App(): JSX.Element {
+  registerNNPushToken(13314, 'cENGDYXoMuZeoDduT1PyDu');
   const HomeNav = () => {
     return (
       <TouchableOpacity style={styles.connectBtn}>

@@ -4,28 +4,12 @@ import PagerView from 'react-native-pager-view'
 import { useEffect, useRef, useState } from 'react'
 import { doc, onSnapshot, updateDoc, } from "firebase/firestore";
 import { FIREBASE_DB } from '../firebase/Firebase.config';
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
 
 export const Home = ({ navigation, route }) => {
   const uid = route.params?.uid
   const medicineRef = doc(FIREBASE_DB, 'users', `${uid}`)
   const [dbData, setDbData] = useState([])
   const [loading, setLoading] = useState(false)
-
-  const [expoPushToken, setExpoPushToken] = useState('');
-  const [notification, setNotification] = useState(false);
-  const notificationListener = useRef();
-  const responseListener = useRef();
 
   //Time format in IST
   const today = new Date()
@@ -147,6 +131,7 @@ export const Home = ({ navigation, route }) => {
                 const imageSource = item.image
                 const startDate = item.fromDate
                 const endDate = item.toDate
+                
                 return (
                   <View key={index}>
                     {selectedDay >= startDate && selectedDay <= endDate &&
@@ -182,8 +167,8 @@ export const Home = ({ navigation, route }) => {
 
                         {!item.statusTakenDate.includes(selectedDay) &&
                           !item.statusSkippedDate.includes(selectedDay) &&
-                          (new Date(item?.dateTimeIST) <= new Date(todayIST)) &&
-                          (new Date(item?.dateTimeIST).toTimeString() < new Date(todayIST).toTimeString()) &&
+                          todayDate === selectedDay &&
+                          new Date(item?.dateTimeIST).toTimeString() < new Date(todayIST).toTimeString() &&
                           <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                             <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'skip')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                               <Image source={require('../assets/skip.png')} />
@@ -197,13 +182,17 @@ export const Home = ({ navigation, route }) => {
                           </View>
                         }
 
-                        {(new Date(item?.fromDate) < new Date(selectedDay)) &&
-                          (new Date(item?.dateTimeIST).toTimeString() > new Date(todayIST).toTimeString()) &&
+                        {(new Date(todayDate) < new Date(selectedDay)) ?
                           <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
                             <Image source={require('../assets/upcoming.png')} />
                             <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
-                          </View>
-                        }
+                          </View> :
+                          (new Date(item?.dateTimeIST).toTimeString() > new Date(todayIST).toTimeString() &&
+                            new Date(todayDate) <= new Date(selectedDay)) &&
+                          <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
+                            <Image source={require('../assets/upcoming.png')} />
+                            <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
+                          </View>}
                       </View>}
                   </View>
                 )
