@@ -22,7 +22,15 @@ export const Home = ({ navigation, route }) => {
   const todayIST = format(parsedDate, 'yyyy-MM-dd\'T\'HH:mm:ss')
   const todayDate = format(parsedDate, 'yyyy-MM-dd')
   const [selectedDay, setSelectedDay] = useState(todayDate)
-
+  
+  const maxToDate = dbData.sort((a, b) => {
+    const dateA = new Date(a.toDate);
+    const dateB = new Date(b.toDate);
+    if (dateA < dateB) return 1;
+    if (dateA > dateB) return -1;
+    return 0;
+  })
+  
   useEffect(() => {
     const unsub = onSnapshot(medicineRef, (docSnapshot) => {
       setDbData(docSnapshot.data().medicines)
@@ -68,7 +76,7 @@ export const Home = ({ navigation, route }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Authorization: `key=${process.env.AUTH_KEY}`,
+          Authorization: `key=${process.env.AUTH_KEY}`,
         },
         body: JSON.stringify({
           to: token,
@@ -131,7 +139,7 @@ export const Home = ({ navigation, route }) => {
       <View style={{ flex: 4, marginTop: 10 }}>
         {loading ?
           <ScrollView>
-            {!dbData?.length &&
+            {selectedDay > maxToDate[0].toDate &&
               <View style={styles.midContainer}>
                 <Image source={require('../assets/abstract.png')} />
                 <Text style={{ fontWeight: '600' }}>Hey! No meds are added to be reminded!</Text>
