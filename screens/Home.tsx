@@ -68,7 +68,7 @@ export const Home = ({ navigation, route }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `key=AAAA6rMz2Rg:APA91bEN7YYUoFUc3b8JdmRzXYyWVxLTh8AQdem0pPvVMafj1XNqQUJCaEYTpVlcb70acrGx8skeiw7nJRP6aeRyJB7rRTN4TEcp4qfB8fsFWktW6T2b2Mjf3mhn_7hpXfR-JjE_vE3S`,
+          Authorization: `key=${process.env.AUTH_KEY}`,
         },
         body: JSON.stringify({
           to: token,
