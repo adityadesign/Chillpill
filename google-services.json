@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1008028866840",
+    "project_id": "chillpill-61342",
+    "storage_bucket": "chillpill-61342.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008028866840:android:db6038469c83c56a59e66d",
+        "android_client_info": {
+          "package_name": "com.aditya3333.Chillpill"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYBS1CZ9eAzEO1ziRFX165EnENlvZtOxg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

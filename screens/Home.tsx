@@ -4,6 +4,7 @@ import PagerView from 'react-native-pager-view'
 import { useEffect, useRef, useState } from 'react'
 import { doc, onSnapshot, updateDoc, } from "firebase/firestore";
 import { FIREBASE_DB } from '../firebase/Firebase.config';
+import * as Notifications from 'expo-notifications';
 
 export const Home = ({ navigation, route }) => {
   const uid = route.params?.uid
@@ -27,6 +28,7 @@ export const Home = ({ navigation, route }) => {
       setDbData(docSnapshot.data().medicines)
       setLoading(true)
     });
+    registerForPushNotifications()
     return () => {
       unsub(); // Invoke unsubscribe when the component unmounts
     };
@@ -57,6 +59,31 @@ export const Home = ({ navigation, route }) => {
     await updateDoc(medicineRef, {
       medicines: dbData
     })
+  }
+
+  async function registerForPushNotifications() {
+    try {
+      const token = (await Notifications.getDevicePushTokenAsync()).data;
+      await fetch('https://fcm.googleapis.com/fcm/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `key=AAAA6rMz2Rg:APA91bEN7YYUoFUc3b8JdmRzXYyWVxLTh8AQdem0pPvVMafj1XNqQUJCaEYTpVlcb70acrGx8skeiw7nJRP6aeRyJB7rRTN4TEcp4qfB8fsFWktW6T2b2Mjf3mhn_7hpXfR-JjE_vE3S`,
+        },
+        body: JSON.stringify({
+          to: token,
+          priority: 'normal',
+          data: {
+            experienceId: '@aditya3333/Chillpill',
+            scopeKey: '@aditya3333/Chillpill',
+            title: "📧 You've got mail",
+            message: 'Hello world! 🌐',
+          },
+        }),
+      });
+    } catch (error) {
+      console.error('Error getting push token:', error);
+    }
   }
 
   return (
@@ -131,7 +158,7 @@ export const Home = ({ navigation, route }) => {
                 const imageSource = item.image
                 const startDate = item.fromDate
                 const endDate = item.toDate
-                
+
                 return (
                   <View key={index}>
                     {selectedDay >= startDate && selectedDay <= endDate &&
