@@ -11,6 +11,7 @@ export const Home = ({ navigation, route }) => {
   const medicineRef = doc(FIREBASE_DB, 'users', `${uid}`)
   const [dbData, setDbData] = useState([])
   const [loading, setLoading] = useState(false)
+  const [filterMe, setFilterMe] = useState(false)
 
   //Time format in IST
   const today = new Date()
@@ -22,7 +23,7 @@ export const Home = ({ navigation, route }) => {
   const todayIST = format(parsedDate, 'yyyy-MM-dd\'T\'HH:mm:ss')
   const todayDate = format(parsedDate, 'yyyy-MM-dd')
   const [selectedDay, setSelectedDay] = useState(todayDate)
-  
+
   const maxToDate = dbData.sort((a, b) => {
     const dateA = new Date(a.toDate);
     const dateB = new Date(b.toDate);
@@ -30,7 +31,7 @@ export const Home = ({ navigation, route }) => {
     if (dateA > dateB) return -1;
     return 0;
   })
-  
+
   useEffect(() => {
     const unsub = onSnapshot(medicineRef, (docSnapshot) => {
       setDbData(docSnapshot.data().medicines)
@@ -97,9 +98,9 @@ export const Home = ({ navigation, route }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.topContainer}>
-        <TouchableOpacity style={styles.user}>
+        <TouchableOpacity style={[styles.user, filterMe && styles.filterMe]} onPress={()=>setFilterMe(prev => !prev)}>
           <Image source={require('../assets/user.png')} />
-          <Text style={styles.userText}>Me</Text>
+          <Text style={[styles.userText, , filterMe && styles.filterMeText]}>Me</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.filter}>
           <Image source={require('../assets/filter.png')} />
@@ -162,76 +163,81 @@ export const Home = ({ navigation, route }) => {
                   return minutesDiff;
                 }
                 return hoursDiff;
-              }).map((item, index) => {
-                const imageSource = item.image
-                const startDate = item.fromDate
-                const endDate = item.toDate
+              })
+                .filter(item => {
+                  if (filterMe) return item.person === 'Me'
+                  else return item
+                })
+                .map((item, index) => {
+                  const imageSource = item.image
+                  const startDate = item.fromDate
+                  const endDate = item.toDate
 
-                return (
-                  <View key={index}>
-                    {selectedDay >= startDate && selectedDay <= endDate &&
-                      <View style={styles.dataContainer}>
-                        <View style={{ flexDirection: 'row' }}>
-                          <View style={{ flex: 1, alignItems: 'flex-start', gap: 10 }}>
-                            <Text style={styles.userData}>{item.person}</Text>
-                            <Image source={{ uri: imageSource }} style={styles.image} />
-                          </View>
-                          <View style={{ flex: 3, justifyContent: 'space-around' }}>
-                            <Text style={{ color: '#666666', fontWeight: '500' }}>{item.medName}</Text>
-                            <Text style={{ fontWeight: '700', fontSize: 24 }}>{item.time}</Text>
-                            <View style={{ flexDirection: 'row', gap: 15 }}>
-                              <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.dose} {item.medType}</Text>
-                              <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.beforeFood ? 'Before breakfast' : 'After breakfast'}</Text>
+                  return (
+                    <View key={index}>
+                      {selectedDay >= startDate && selectedDay <= endDate &&
+                        <View style={styles.dataContainer}>
+                          <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flex: 1, alignItems: 'flex-start', gap: 10 }}>
+                              <Text style={styles.userData}>{item.person}</Text>
+                              <Image source={{ uri: imageSource }} style={styles.image} />
+                            </View>
+                            <View style={{ flex: 3, justifyContent: 'space-around' }}>
+                              <Text style={{ color: '#666666', fontWeight: '500' }}>{item.medName}</Text>
+                              <Text style={{ fontWeight: '700', fontSize: 24 }}>{item.time}</Text>
+                              <View style={{ flexDirection: 'row', gap: 15 }}>
+                                <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.dose} {item.medType}</Text>
+                                <Text style={{ color: '#999999', fontSize: 12, fontWeight: '500' }}>{item.beforeFood ? 'Before breakfast' : 'After breakfast'}</Text>
+                              </View>
                             </View>
                           </View>
-                        </View>
 
-                        {item.isTaken && item.statusTakenDate.includes(selectedDay) &&
-                          <View style={styles.medicineStatus}>
-                            <Image source={require('../assets/take.png')} />
-                            <Text style={{ color: '#1F848A', fontWeight: '500' }}>Taken</Text>
-                          </View>
-                        }
-
-                        {item.isSkipped && item.statusSkippedDate.includes(selectedDay) &&
-                          <View style={styles.medicineStatus}>
-                            <Image source={require('../assets/skip.png')} />
-                            <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skipped</Text>
-                          </View>
-                        }
-
-                        {!item.statusTakenDate.includes(selectedDay) &&
-                          !item.statusSkippedDate.includes(selectedDay) &&
-                          todayDate === selectedDay &&
-                          new Date(item?.dateTimeIST).toTimeString() < new Date(todayIST).toTimeString() &&
-                          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-                            <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'skip')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                              <Image source={require('../assets/skip.png')} />
-                              <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skip</Text>
-                            </TouchableOpacity>
-                            <View style={{ borderWidth: 0.6, borderColor: '#E9E9E9' }}></View>
-                            <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'take')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                          {item.isTaken && item.statusTakenDate.includes(selectedDay) &&
+                            <View style={styles.medicineStatus}>
                               <Image source={require('../assets/take.png')} />
-                              <Text style={{ color: '#1F848A', fontWeight: '500' }}>Take</Text>
-                            </TouchableOpacity>
-                          </View>
-                        }
+                              <Text style={{ color: '#1F848A', fontWeight: '500' }}>Taken</Text>
+                            </View>
+                          }
 
-                        {(new Date(todayDate) < new Date(selectedDay)) ?
-                          <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
-                            <Image source={require('../assets/upcoming.png')} />
-                            <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
-                          </View> :
-                          (new Date(item?.dateTimeIST).toTimeString() > new Date(todayIST).toTimeString() &&
-                            new Date(todayDate) <= new Date(selectedDay)) &&
-                          <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
-                            <Image source={require('../assets/upcoming.png')} />
-                            <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
-                          </View>}
-                      </View>}
-                  </View>
-                )
-              })
+                          {item.isSkipped && item.statusSkippedDate.includes(selectedDay) &&
+                            <View style={styles.medicineStatus}>
+                              <Image source={require('../assets/skip.png')} />
+                              <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skipped</Text>
+                            </View>
+                          }
+
+                          {!item.statusTakenDate.includes(selectedDay) &&
+                            !item.statusSkippedDate.includes(selectedDay) &&
+                            todayDate === selectedDay &&
+                            new Date(item?.dateTimeIST).toTimeString() < new Date(todayIST).toTimeString() &&
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                              <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'skip')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <Image source={require('../assets/skip.png')} />
+                                <Text style={{ color: '#DB6F6A', fontWeight: '500' }}>Skip</Text>
+                              </TouchableOpacity>
+                              <View style={{ borderWidth: 0.6, borderColor: '#E9E9E9' }}></View>
+                              <TouchableOpacity onPress={() => handleTakeSkip(item.id, 'take')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <Image source={require('../assets/take.png')} />
+                                <Text style={{ color: '#1F848A', fontWeight: '500' }}>Take</Text>
+                              </TouchableOpacity>
+                            </View>
+                          }
+
+                          {(new Date(todayDate) < new Date(selectedDay)) ?
+                            <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
+                              <Image source={require('../assets/upcoming.png')} />
+                              <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
+                            </View> :
+                            (new Date(item?.dateTimeIST).toTimeString() > new Date(todayIST).toTimeString() &&
+                              new Date(todayDate) <= new Date(selectedDay)) &&
+                            <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5 }}>
+                              <Image source={require('../assets/upcoming.png')} />
+                              <Text style={{ color: '#999999', fontWeight: '500' }}>Upcoming</Text>
+                            </View>}
+                        </View>}
+                    </View>
+                  )
+                })
             }
           </ScrollView> :
           <ActivityIndicator
@@ -290,6 +296,12 @@ const styles = StyleSheet.create({
     borderColor: '#E9E9E9',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  filterMe:{
+    backgroundColor: '#1F848A',
+  },
+  filterMeText:{
+    color: '#FFFFFF'
   },
   row: {
     flexDirection: 'row',
